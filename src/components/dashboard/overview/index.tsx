@@ -21,6 +21,8 @@ interface Props {
   dispatch: Dispatch<ManagementActionTypes>
 }
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 const SeriesOverview: FC<Props> = ({
   account,
   network,
@@ -35,9 +37,11 @@ const SeriesOverview: FC<Props> = ({
           <h3 className="m-0">
             {managing?.name} ({managing?.jurisdiction})
           </h3>
+          { managing.owner != ZERO_ADDRESS &&
           <div className="">
             Manager: <Address address={managing.owner}></Address>
           </div>
+          }
           <div className="">
             Entity smart contract:{' '}
             <Address address={managing.contract}></Address>
@@ -45,13 +49,23 @@ const SeriesOverview: FC<Props> = ({
           <div className="">
             Creation: <UTCDate date={managing.created} separator=""></UTCDate>
           </div>
-          <div className="small text-warning mt-2">
-            <span style={{ marginRight: '0.5em' }}>
-              <ExclamationCircle className="fix-icon-alignment" />
-            </span>
-            Your entity smart contract is not a wallet. Go to Multisig to create
-            a digital wallet for your company.
-          </div>
+          { managing.owner != ZERO_ADDRESS &&
+            <div className="small text-warning mt-2">
+              <span style={{ marginRight: '0.5em' }}>
+                <ExclamationCircle className="fix-icon-alignment" />
+              </span>
+              Your entity smart contract is not a wallet. Go to Multisig to create
+              a digital wallet for your company.
+            </div>
+          }
+          { managing.owner == ZERO_ADDRESS &&
+            <div className="text-warning">
+              <span style={{ marginRight: '0.5em' }}>
+                <ExclamationCircle className="fix-icon-alignment" />
+              </span>
+              Entity closed
+            </div>
+            }
         </div>
       )}
     </div>

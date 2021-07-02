@@ -35,9 +35,14 @@ const Config: FC<Props> = ({
   const [currentOwner, setCurrentOwner] = useState<string>('')
   const [owners, setOwners] = useState<string[]>([])
   const [threshold, setThreshold] = useState<number>(1)
+  const [existing, setExisting] = useState('')
   const [transaction, setTransaction] = useState<string | null>(null)
 
   const web3: Web3 = window.web3
+
+  React.useEffect(() => {
+    setOwners([account])
+  }, [])
 
   const ListOwners = () => {
     return owners.map((owner, idx) => (
@@ -86,6 +91,39 @@ const Config: FC<Props> = ({
     owns.push(currentOwner)
     setOwners(owns)
     setCurrentOwner('')
+  }
+
+  const handleExistingChanges = (event: React.FormEvent<HTMLInputElement>) => {
+    setExisting(event.target.value)
+  }
+
+  const handleClickAttachExisting = async () => {
+    if (!account || !network || !managing) return
+    if (!Web3.utils.isAddress(existing)) {
+      setError('The existing wallet is not a valid Address.')
+      return
+    }
+    try {
+      // Get deployed Gnosis Contract
+      const owners = await GnosisSafe.getContract(existing)
+        .methods.getOwners()
+        .call({ from: account })
+      console.log(owners)
+      if (owners.length < 1) throw 'Error'
+    } catch (err) {
+      setError('Error checking if address is a Gnosis-safe Wallet')
+      return
+    }
+    const requestInfo = await TransactionUtils.getTransactionRequestInfo(
+      account,
+      '100000'
+    )
+    MasterRegistry.getContract(network)
+      .methods.setRecord(managing.contract, 2, existing)
+      .send(requestInfo, (error, hash: string) => {
+        if (error) return console.error(error)
+        setTransaction(hash)
+      })
   }
 
   const handleClickDeploy = async () => {
@@ -138,6 +176,18 @@ const Config: FC<Props> = ({
       return
     }
     setTransaction(null)
+    const safeContract = GnosisSafe.getContract(multisigAddress)
+    dispatch({
+      type: SET_MULTISIG_CONFIG,
+      payload: {
+        owners: await safeContract.methods
+          .getOwners()
+          .call({ from: account }),
+        threshold: await safeContract.methods
+          .getThreshold()
+          .call({ from: account }),
+      },
+    })
     dispatch({
       type: SET_MULTISIG_DEPLOYED,
       payload: {
@@ -199,9 +249,24 @@ const Config: FC<Props> = ({
         </div>
       )}
       {!transaction && (
-        <button className="btn btn-primary mt-4" onClick={handleClickDeploy}>
-          Create Wallet
-        </button>
+        <div>
+          <button className="btn btn-primary mt-4" onClick={handleClickDeploy}>
+            Create Wallet
+          </button>
+          <p className="mt-4">Or link an existing Gnosis-Safe multisig wallet</p>
+          <div className="input-group mb-2">
+            <input
+              type="text"
+              className="form-control right"
+              placeholder="e.g.: 0x000123123..."
+              aria-label="Text input with dropdown button"
+              onChange={handleExistingChanges}
+            />
+            <div className="input-group-append">
+              <div className="btn btn-primary" onClick={handleClickAttachExisting}>Attach Wallet</div>
+            </div>
+          </div>
+        </div>
       )}
       {transaction && (
         <TransactionMonitor

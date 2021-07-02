@@ -10,6 +10,7 @@ export enum ManageSection {
   ENS = 'ens',
   MULTISIG = 'multisig',
   PLUGINS = 'plugins',
+  MANAGE = 'manage',
 }
 
 export enum Badges {

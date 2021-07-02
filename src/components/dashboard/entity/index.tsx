@@ -23,6 +23,7 @@ import SeriesENS from '../ens'
 import SeriesToken from '../token'
 import SeriesMultisig from '../multisig'
 import SeriesOverview from '../overview'
+import Manage from '../manage'
 import Plugins from '../plugins'
 import { Link } from 'gatsby'
 import { CSSTransition } from 'react-transition-group'
@@ -235,6 +236,18 @@ const SeriesManagement: FC<Props> = ({
         unmountOnExit
       >
         <Plugins></Plugins>
+      </CSSTransition>
+      <CSSTransition
+        in={section == ManageSection.MANAGE}
+        timeout={{
+          appear: 200,
+          enter: 200,
+          exit: 200,
+        }}
+        classNames="slide-up"
+        unmountOnExit
+      >
+        <Manage></Manage>
       </CSSTransition>
     </div>
   )

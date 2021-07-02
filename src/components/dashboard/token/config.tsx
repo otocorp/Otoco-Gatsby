@@ -28,6 +28,7 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
   const [shares, setShares] = useState(0)
   const [name, setName] = useState('')
   const [symbol, setSymbol] = useState('')
+  const [existing, setExisting] = useState('')
   const [transaction, setTransaction] = useState('')
 
   const web3: Web3 = window.web3
@@ -43,6 +44,9 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
   }
   const handleChangeShares = (event: React.FormEvent<HTMLInputElement>) => {
     setShares(parseInt(event.target.value))
+  }
+  const handleExistingChanges = (event: React.FormEvent<HTMLInputElement>) => {
+    setExisting(event.target.value)
   }
 
   const handleClickDeploy = async () => {
@@ -96,6 +100,35 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
     }
   }
 
+  const handleClickAttachExisting = async () => {
+    if (!account || !network || !managing) return
+    if (!Web3.utils.isAddress(existing)) {
+      setError('The existing token is not an Address.')
+      return
+    }
+    try {
+      // Get deployed Token Contract
+      const decimals = await TokenContract.getContract(existing)
+        .methods.decimals()
+        .call({ from: account })
+      console.log('DECIMALS', decimals)
+      if (isNaN(decimals)) throw 'Error'
+    } catch (err) {
+      setError('Error checking if address is a ERC20 token')
+      return
+    }
+    const requestInfo = await TransactionUtils.getTransactionRequestInfo(
+      account,
+      '100000'
+    )
+    MasterRegistry.getContract(network)
+      .methods.setRecord(managing.contract, 1, existing)
+      .send(requestInfo, (error, hash: string) => {
+        if (error) return console.error(error)
+        setTransaction(hash)
+      })
+  }
+
   const handleNextStep = async () => {
     if (!account || !network || !managing) {
       setError('Not connected or not account related.')
@@ -105,10 +138,31 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
     const contract = await MasterRegistry.getContract(network)
       .methods.getRecord(managing.contract, 1)
       .call({ from: account })
+    const shares = await TokenContract.getContract(contract)
+      .methods.totalSupply()
+      .call({ from: account })
+    const decimals = await TokenContract.getContract(contract)
+      .methods.decimals()
+      .call({ from: account })
+    const sharesBN = new BN(shares)
+
+    dispatch({
+      type: SET_TOKEN_CONFIG,
+      payload: {
+        name: await TokenContract.getContract(contract)
+          .methods.name()
+          .call({ from: account }),
+        symbol: await TokenContract.getContract(contract)
+          .methods.symbol()
+          .call({ from: account }),
+        shares: sharesBN.div(getBNDecimals(decimals)).toString(),
+        decimals: decimals,
+      },
+    })
     // Get Token creation
     const events = await TokenContract.getContract(
       contract
-    ).getPastEvents('Initialized', { fromBlock: 0, toBlock: 'latest' })
+    ).getPastEvents('allEvents', { fromBlock: 0, toBlock: 'latest' })
     const timestamp = await web3.eth.getBlock(events[0].blockNumber)
     const creation = new Date(parseInt(timestamp.timestamp.toString()) * 1000)
     dispatch({
@@ -130,7 +184,6 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
         right, a convertible, etc. Simply set you token parameters and click{' '}
         <b>Deploy Token</b> to create the new contract.
       </div>
-      {error && <p className="small text-danger">{error}</p>}
       {!transaction && (
         <div className="row">
           <div className="col-12 col-md-8">
@@ -183,6 +236,19 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
               Deploy Token
             </button>
           </div>
+          <p className="mt-4">Or link an existing token ERC20</p>
+          <div className="input-group mb-2">
+              <input
+                type="text"
+                className="form-control right"
+                placeholder="e.g.: 0x000123123..."
+                aria-label="Text input with dropdown button"
+                onChange={handleExistingChanges}
+              />
+              <div className="input-group-append">
+                <div className="btn btn-primary" onClick={handleClickAttachExisting}>Attach Token</div>
+              </div>
+            </div>
         </div>
       )}
       {transaction && (
@@ -192,6 +258,7 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
           callbackSuccess={handleNextStep}
         ></TransactionMonitor>
       )}
+      {error && <p className="small text-danger">{error}</p>}
     </div>
   )
 }
