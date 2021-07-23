@@ -16,6 +16,7 @@ export enum ManageSection {
 export enum Badges {
   FIRST = 'First Member',
   MANAGEMENT = 'Manager',
+  CLOSED = 'Closed',
 }
 
 export type SeriesType = {
@@ -23,7 +24,9 @@ export type SeriesType = {
   name: string
   jurisdiction: string
   created: Date
+  renewal?: Date
   owner: string
+  closed: boolean
   badges: Badges[]
 }
 

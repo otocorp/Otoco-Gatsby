@@ -9,9 +9,10 @@ import ERC20Contract from '../../smart-contracts/ERC20'
 import TransactionUtils from '../../services/transactionUtils'
 import { requestPaymentWyre, WyreEnv } from '../../services/wyre'
 import { PrivateKey } from '@textile/crypto'
-import { PaymentMessage, PaymentProps } from '../../state/account/types'
+import { DecryptedMailbox, PaymentMessage, PaymentProps } from '../../state/account/types'
 import Textile from '../../services/textile'
 import OtocoIcon from '../icons'
+import { downloadReceipt } from '../../services/receipt'
 
 enum StatusType {
   CLOSED = 'closed',
@@ -55,7 +56,13 @@ const PaymentWidget: FC<Props> = ({
 
   React.useEffect(() => {
     if (show) {
-      setStatus(StatusType.OPENED)
+      setReceipt({
+        receipt: '0xe1e7e6651f1736681452af81d4f6a55adaa19676a013f990ec7e75bfa8c088e1',
+        method: 'DAI',
+        currency: 'DAI',
+        timestamp: Date.now(),
+      })
+      setStatus(StatusType.SUCCESS)
       setTimeout(() => {
         setCountdown(true)
       }, 200)
@@ -194,7 +201,28 @@ const PaymentWidget: FC<Props> = ({
       method: 'payment',
       message,
     })
-    await Textile.readMessage(messageId)
+    try {
+      await Textile.readMessage(messageId)
+    } catch (err) {
+      // This will fail in cases of DAPP generated Renewals
+    }
+  }
+  const handleClickDownload = async () => {
+    await downloadReceipt(
+      new Date(receipt?.timestamp),
+      receipt?.receipt,
+      product,
+      network,
+      receipt?.currency,
+      receipt?.method,
+      managing?.contract,
+      account,
+      amount
+    )
+    setError('')
+    setReceipt(null)
+    setStatus(StatusType.CLOSED)
+    closeModal()
   }
 
   return (
@@ -282,34 +310,41 @@ const PaymentWidget: FC<Props> = ({
               {status == StatusType.SUCCESS && (
                 <div>
                   <h3>Payment Successfull</h3>
+                  <div className="px-4 py-4">
                   <div
-                    className="row  align-items-center justify-content-center small"
+                    className="row d-none d-md-flex align-items-center justify-content-center small"
                     style={{ minHeight: '230px' }}
                   >
-                    <div className="col-12">
-                      <b>Item:</b>
-                      <span className="text-primary">{product}</span>
-                    </div>
-                    <div className="col-12">
-                      <b>company: </b>
-                      <span className="text-primary">
-                        {managing?.name} ({managing?.jurisdiction})
-                      </span>
-                    </div>
-                    <div className="col-12">
-                      <b>receipt: </b>
-                      <span className="text-primary">{receipt?.receipt}</span>
-                    </div>
-                    <div className="col-12">
-                      <b>method: </b>
-                      <span className="text-primary">{receipt?.method}</span>
-                    </div>
-                    <div className="col-12">
-                      <b>amount: </b>
-                      <span className="text-primary">{amount}</span>
-                    </div>
+                    <div className="col-3 text-end"><b>Item:</b></div>
+                    <div className="col-9">{product}</div>
+                    <div className="col-3 text-end"><b>Entity:</b></div>
+                    <div className="col-9">{managing?.name} ({managing?.jurisdiction})</div>
+                    <div className="col-3 text-end"><b>Receipt:</b></div>
+                    <div className="col-9">{receipt?.receipt}</div>
+                    <div className="col-3 text-end"><b>Method:</b></div>
+                    <div className="col-9">{receipt?.method}</div>
+                    <div className="col-3 text-end"><b>Amount:</b></div>
+                    <div className="col-9">{amount} {receipt?.currency}</div>
+                  </div>
+                  <div
+                    className="row d-md-none align-items-center justify-content-center small"
+                    style={{ minHeight: '230px' }}
+                  >
+                    <h3 className="col-12 text-center">{product}</h3>
+                    <div className="col-12 text-center"><b>Receipt</b></div>
+                    <div className="col-12 text-center">{receipt?.receipt}</div>
+                    <div className="col-12 text-center"><b>Method</b></div>
+                    <div className="col-12 text-center">{receipt?.method}</div>
+                    <div className="col-12 text-center"><b>Amount:</b> {amount} {receipt?.currency}</div>
+                  </div>
+                  <div className="row">
+                    <button
+                      className="btn btn-primary flex-fill"
+                      onClick={handleClickDownload}
+                    >Download and Close</button>
                   </div>
                   {error && <p className="small text-warning">{error}</p>}
+                </div>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 import React, { Dispatch, FC } from 'react'
 import { connect } from 'react-redux'
-import { Gear } from 'react-bootstrap-icons'
+import { ExclamationCircle, Gear } from 'react-bootstrap-icons'
 import { ShieldLock } from 'react-bootstrap-icons'
 import { IState } from '../../state/types'
 import {
@@ -57,6 +57,15 @@ const SeriesListing: FC<PropsSeries> = ({ series, dispatch }: PropsSeries) => {
           </div>
           <div className="mt-4">
             <div className="d-grid gap-2">
+              { s.closed && (
+              <div className="btn btn-warning-outline disabled text-warning mt-2 text-center">
+                <span style={{ marginRight: '0.5em' }}>
+                  <ExclamationCircle className="fix-icon-alignment" />
+                </span>
+                Closed
+              </div>
+              )}
+              { !s.closed && (
               <Link
                 className="btn btn-primary-outline"
                 to={`/dashpanel/entity/${s.contract}`}
@@ -64,6 +73,7 @@ const SeriesListing: FC<PropsSeries> = ({ series, dispatch }: PropsSeries) => {
                 <Gear className="fix-icon-alignment" />
                 <span style={{ paddingLeft: '0.5em' }}>Manage</span>
               </Link>
+              )}
             </div>
           </div>
         </div>

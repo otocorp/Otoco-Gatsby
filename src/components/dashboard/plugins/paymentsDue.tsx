@@ -11,12 +11,10 @@ interface ListMessagesProps {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const PaymentsDue = ({
-  contract,
   messages,
   handlePay: handle,
 }: ListMessagesProps) => {
   const tempMessages = messages
-    .filter((m) => m.body.method === 'billing')
     .map((m) => {
       return {
         messageId: m.id,
@@ -29,7 +27,6 @@ export const PaymentsDue = ({
         currency: m.body.message.currency,
       }
     })
-    .filter((m) => m.entity === contract)
 
   return tempMessages.map((m) => (
     <tr className="small" key={m.billId}>

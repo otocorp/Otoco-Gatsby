@@ -92,7 +92,7 @@ const MailboxForm: FC<Props> = ({
           <div className="row">
             {!creation && (
               <div className="col-12 col-md-6 col-lg-8">
-                <h4>Access everything in one place</h4>
+                <h4>Wallet Authentication</h4>
                 <p className="small">
                   Sign with your connected wallet to send and receive encrypted
                   messages related to your entities, get file storage on IPFS,
@@ -104,7 +104,7 @@ const MailboxForm: FC<Props> = ({
                     className="btn btn-primary"
                     onClick={handleClickCreate}
                   >
-                    Activate
+                    Authenticate
                   </button>
                 </p>
               </div>
@@ -118,7 +118,7 @@ const MailboxForm: FC<Props> = ({
                     className="btn btn-primary disabled"
                     onClick={handleClickCreate}
                   >
-                    Activate
+                    Authenticating...
                   </button>
                 </p>
               </div>

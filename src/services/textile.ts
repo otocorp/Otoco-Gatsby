@@ -82,6 +82,7 @@ interface TextileInterface {
     to: string,
     message: MessageSchema
   ) => Promise<UserMessage | null>
+  sendRequest: (body:any) => Promise<any>
   deleteMessage: (id: string) => Promise<void>
   readMessage: (id: string) => Promise<void>
 }
@@ -299,6 +300,49 @@ const Textile: TextileInterface = {
     })
   },
 
+  sendRequest: async function(
+    body:any
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const socket = new WebSocket(process.env.GATSBY_ORACLE_URL)
+      var enc = new TextEncoder();
+      const bodyArray = enc.encode(JSON.stringify(body))
+
+      /* Wait for our socket to open successfully */
+      socket.onopen = () => {
+        if (this.privateKey) {
+          // Send an authenticated request
+          socket.send(
+            JSON.stringify({
+              type: 'request',
+              signer: this.privateKey.public,
+              signature: this.privateKey?.sign(bodyArray).toString(),
+              body
+            })
+          )
+        } else {
+          // Send an unautenticated request
+          socket.send(
+            JSON.stringify({
+              type: 'request',
+              body
+            })
+          )
+        }
+        /* Listen for messages from the server */
+        socket.onmessage = async (event) => {
+          const data = JSON.parse(event.data)
+          if (data.value.error) {
+            reject(data.value.message)
+            return
+          }
+          resolve(data.value)
+        }
+      }
+      socket.onerror = reject
+    })
+  },
+
   authorize: async function () {
     if (!this.privateKey) throw 'No private key found'
     const auth: UserAuth = await this.loginWithChallenge(this.privateKey)
@@ -307,6 +351,7 @@ const Textile: TextileInterface = {
     await this.user.setupMailbox()
     const now = new Date()
     this.lastAuthorization = now.getTime()
+    window.priv = this.privateKey
     // await this.user.watchInbox(await this.user.getMailboxID(), this.watchInbox)
     return this.client
   },

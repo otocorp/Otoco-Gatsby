@@ -29,6 +29,7 @@ import { Link } from 'gatsby'
 import { CSSTransition } from 'react-transition-group'
 import { GraphNetwork, requestSubgraph } from '../../../services/thegraph'
 import { AxiosResponse } from 'axios'
+import Textile from '../../../services/textile'
 
 interface Props {
   id: string
@@ -75,6 +76,7 @@ const SeriesManagement: FC<Props> = ({
           name: '',
           owner: '',
           badges: [],
+          closed: false
         }
         let otocoNetwork = GraphNetwork.mainnet
         try {
@@ -108,7 +110,16 @@ const SeriesManagement: FC<Props> = ({
             newSeries.badges.push(Badges.MANAGEMENT)
           if (company.creator == account.toLowerCase())
             newSeries.badges.push(Badges.FIRST)
-
+          
+          try {
+            const res = await Textile.sendRequest({
+              method:'expiration',
+              wallet: account,
+              environment: network,
+              entity: id.toLowerCase()
+            })
+            newSeries.renewal = new Date(res.expiration-36892800000)
+          } catch (err) {}
           dispatch({ type: SET_MANAGE_SERIES, payload: newSeries })
           setLoading(false)
         } catch (err) {

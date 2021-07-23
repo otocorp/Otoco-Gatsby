@@ -6,12 +6,11 @@ import UTCDate from '../../utcDate/utcDate'
 import {
   SeriesType,
   ManagementActionTypes,
+  SET_MANAGE_SECTION,
+  ManageSection,
 } from '../../../state/management/types'
 import { IState } from '../../../state/types'
 import { IJurisdictionOption } from '../../../state/spinUp/types'
-
-import { Link } from 'gatsby'
-import { CSSTransition } from 'react-transition-group'
 
 interface Props {
   account?: string | null
@@ -30,6 +29,14 @@ const SeriesOverview: FC<Props> = ({
   jurisdictionOptions,
   dispatch,
 }: Props) => {
+
+  const handleChangeSection = (section: ManageSection | undefined) => {
+    dispatch({
+      type: SET_MANAGE_SECTION,
+      payload: section,
+    })
+  }
+
   return (
     <div>
       {managing !== undefined && (
@@ -49,6 +56,24 @@ const SeriesOverview: FC<Props> = ({
           <div className="">
             Creation: <UTCDate date={managing.created} separator=""></UTCDate>
           </div>
+          { managing.renewal &&
+            <div className={managing.renewal.getTime() > Date.now() ? '' : 'text-warning'}>
+              Next Renewal: <UTCDate date={managing.renewal} separator=""></UTCDate>
+            </div>
+          }
+          { managing.renewal && managing.renewal.getTime() < Date.now() && 
+            <div>
+              <div className="small mt-2">
+                <span style={{ marginRight: '0.5em' }}>
+                  <ExclamationCircle className="fix-icon-alignment" />
+                </span>
+                Please access <a href="" onClick={handleChangeSection.bind(
+                    undefined,
+                    ManageSection.PLUGINS
+                  )}>Billing</a> to renew your entity.
+              </div>
+            </div>
+          }
           { managing.owner != ZERO_ADDRESS &&
             <div className="small text-warning mt-2">
               <span style={{ marginRight: '0.5em' }}>
