@@ -111,7 +111,6 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
       const decimals = await TokenContract.getContract(existing)
         .methods.decimals()
         .call({ from: account })
-      console.log('DECIMALS', decimals)
       if (isNaN(decimals)) throw 'Error'
     } catch (err) {
       setError('Error checking if address is a ERC20 token')

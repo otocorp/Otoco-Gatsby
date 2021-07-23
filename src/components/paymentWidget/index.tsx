@@ -13,6 +13,7 @@ import { DecryptedMailbox, PaymentMessage, PaymentProps } from '../../state/acco
 import Textile from '../../services/textile'
 import OtocoIcon from '../icons'
 import { downloadReceipt } from '../../services/receipt'
+import { ExclamationCircle } from 'react-bootstrap-icons'
 
 enum StatusType {
   CLOSED = 'closed',
@@ -56,13 +57,7 @@ const PaymentWidget: FC<Props> = ({
 
   React.useEffect(() => {
     if (show) {
-      setReceipt({
-        receipt: '0xe1e7e6651f1736681452af81d4f6a55adaa19676a013f990ec7e75bfa8c088e1',
-        method: 'DAI',
-        currency: 'DAI',
-        timestamp: Date.now(),
-      })
-      setStatus(StatusType.SUCCESS)
+      setStatus(StatusType.OPENED)
       setTimeout(() => {
         setCountdown(true)
       }, 200)
@@ -166,7 +161,6 @@ const PaymentWidget: FC<Props> = ({
       if (status != StatusType.SUCCESS) {
         setStatus(StatusType.OPENED)
         setError('Payment failed or cancelled.')
-        console.log('PAYMENT CANCELLED', err)
       } else {
         setError(
           'Error sending receipt to oracle, wait some minutes and click Re-send message.'
@@ -255,7 +249,7 @@ const PaymentWidget: FC<Props> = ({
                     Item: {product} -{' '}
                     <span className="text-secondary">({billId})</span>
                   </div>
-                  <div className="row justify-content-center">
+                  <div className="row justify-content-center mt-2">
                     <button
                       className="btn btn-primary modal-option"
                       onClick={handleWyrePayment}
@@ -278,9 +272,11 @@ const PaymentWidget: FC<Props> = ({
                       <div className="label">{amount} USDT</div>
                     </button>
                   </div>
-                  <p className="small">
-                    You will receive a message in your dashpanel once your
-                    payment is confirmed.
+                  <p className="small mt-2">
+                    <span style={{ marginRight: '0.5em' }}>
+                      <ExclamationCircle className="fix-icon-alignment" />
+                    </span>
+                    Don't speed up this transaction, make sure your gas price is configured properly.
                   </p>
                   {error && <p className="small text-warning">{error}</p>}
                 </div>
@@ -338,6 +334,12 @@ const PaymentWidget: FC<Props> = ({
                     <div className="col-12 text-center"><b>Amount:</b> {amount} {receipt?.currency}</div>
                   </div>
                   <div className="row">
+                    <p className="small mt-2">
+                      <span style={{ marginRight: '0.5em' }}>
+                        <ExclamationCircle className="fix-icon-alignment" />
+                      </span>
+                      Payments are not processed immediatelly, it could take some minutes to reflect changes.
+                    </p>
                     <button
                       className="btn btn-primary flex-fill"
                       onClick={handleClickDownload}

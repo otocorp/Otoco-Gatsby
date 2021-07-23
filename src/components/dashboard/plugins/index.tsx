@@ -25,8 +25,6 @@ interface Props {
   network?: string
   managing?: SeriesType
   privatekey?: PrivateKey
-  inboxMessages: DecryptedMailbox[]
-  outboxMessages: DecryptedMailbox[]
   dispatch: Dispatch<AccountActionTypes | ManagementActionTypes>
 }
 
@@ -42,19 +40,18 @@ const SeriesOverview: FC<Props> = ({
   network,
   managing,
   privatekey,
-  inboxMessages,
-  outboxMessages,
   dispatch,
 }: Props) => {
+  const [inbox, setInbox] = useState<DecryptedMailbox[]>([])
+  const [outbox, setOutbox] = useState<DecryptedMailbox[]>([])
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [modalInfo, setModalInfo] = useState<ModalProps | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
 
-  const insertRenewalDue = (inbox:DecryptedMailbox[], outbox:DecryptedMailbox[]) => {
+  const insertRenewalDue = (inbox:DecryptedMailbox[], out:DecryptedMailbox[]) => {
     const billRef = "Renewal/" + managing.renewal.getFullYear()
-    const payment = outbox.find((m) => m.body.message.body.billRef == billRef)
-    console.log(payment)
+    const payment = out.find((m) => m.body.message.body.billRef == billRef)
     if ( !payment && managing?.renewal && managing?.renewal.getTime() < Date.now() ) {
       inbox.push({
         from: process.env.GATSBY_ORACLE_KEY,
@@ -82,18 +79,12 @@ const SeriesOverview: FC<Props> = ({
         const outbox = (await Textile.listOutboxMessages())
           .filter((m) => m.body.method === 'payment' )
           .filter((m) => m.body.message.entity === managing?.contract)
-        dispatch({
-          type: SET_OUTBOX_MESSAGES,
-          payload: outbox,
-        })
+        setOutbox(outbox)
         const inbox = (await Textile.listInboxMessages())
           .filter((m) => m.body.method === 'billing')
           .filter((m) => m.body.message.entity === managing?.contract)
         insertRenewalDue(inbox, outbox)
-        dispatch({
-          type: SET_INBOX_MESSAGES,
-          payload: inbox,
-        })
+        setInbox(inbox)
         setLoading(false)
       } catch (err) {
         console.error(err)
@@ -167,7 +158,7 @@ const SeriesOverview: FC<Props> = ({
                   { !loading &&
                   <PaymentsDue
                     contract={managing?.contract}
-                    messages={inboxMessages}
+                    messages={inbox}
                     handlePay={handleSelectPlugin}
                   ></PaymentsDue>
                   }
@@ -213,7 +204,7 @@ const SeriesOverview: FC<Props> = ({
                 { !loading &&
                   <PaymentsMade
                     contract={managing?.contract}
-                    messages={outboxMessages}
+                    messages={outbox}
                     wallet={account}
                   ></PaymentsMade>
                 }
@@ -241,6 +232,4 @@ export default connect((state: IState) => ({
   network: state.account.network,
   managing: state.management.managing,
   privatekey: state.account.privatekey,
-  inboxMessages: state.account.inboxMessages,
-  outboxMessages: state.account.outboxMessages,
 }))(SeriesOverview)

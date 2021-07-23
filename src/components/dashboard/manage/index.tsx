@@ -62,7 +62,7 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
           )}
           {closeFormOpened && !transaction && (
           <div className="card text-white">
-            <p>This operation couldn't be undone. Are you sure want to close your entity?</p>
+            <p>After confirm your ownership will be revoked. This operation couldn't be undone. Are you sure want to close your entity?</p>
             <button className="btn btn-warning mt-4" onClick={handleClickConfirmClose}>
               Confirm Close Entity
             </button>

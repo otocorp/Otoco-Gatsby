@@ -100,7 +100,7 @@ const AccountWidget: FC<Props> = ({
   }, [account])
 
   React.useEffect(() => {
-    const interval = setInterval(async () => {
+    const interval = setTimeout(async () => {
       dispatch({
         type: SET_INBOX_MESSAGES,
         payload: await Textile.listInboxMessages(),
@@ -109,7 +109,7 @@ const AccountWidget: FC<Props> = ({
         type: SET_OUTBOX_MESSAGES,
         payload: await Textile.listOutboxMessages(),
       })
-    }, 120000)
+    }, 0)
     return () => clearInterval(interval)
   }, [privatekey])
 

@@ -108,7 +108,6 @@ const Config: FC<Props> = ({
       const owners = await GnosisSafe.getContract(existing)
         .methods.getOwners()
         .call({ from: account })
-      console.log(owners)
       if (owners.length < 1) throw 'Error'
     } catch (err) {
       setError('Error checking if address is a Gnosis-safe Wallet')

@@ -45,44 +45,46 @@ const SeriesOverview: FC<Props> = ({
             {managing?.name} ({managing?.jurisdiction})
           </h3>
           { managing.owner != ZERO_ADDRESS &&
-          <div className="">
-            Manager: <Address address={managing.owner}></Address>
+          <div className="mt-4">
+            <h4>Manager</h4> <Address address={managing.owner}></Address>
           </div>
           }
-          <div className="">
-            Entity smart contract:{' '}
-            <Address address={managing.contract}></Address>
-          </div>
-          <div className="">
-            Creation: <UTCDate date={managing.created} separator=""></UTCDate>
-          </div>
-          { managing.renewal &&
-            <div className={managing.renewal.getTime() > Date.now() ? '' : 'text-warning'}>
-              Next Renewal: <UTCDate date={managing.renewal} separator=""></UTCDate>
+          <div className="row">
+            <div className="col-12 col-sm-6 col-md-4 col-lg-3 mt-2">
+              <h4>Entity address</h4>
+              <Address address={managing.contract}></Address>
             </div>
-          }
-          { managing.renewal && managing.renewal.getTime() < Date.now() && 
-            <div>
-              <div className="small mt-2">
+            { managing.owner != ZERO_ADDRESS &&
+              <div className="col-12 col-md-4 small text-white-50">
                 <span style={{ marginRight: '0.5em' }}>
                   <ExclamationCircle className="fix-icon-alignment" />
                 </span>
-                Please access <a href="" onClick={handleChangeSection.bind(
-                    undefined,
-                    ManageSection.PLUGINS
-                  )}>Billing</a> to renew your entity.
+                Your entity smart contract is not a wallet. Go to Multisig to create
+                a digital wallet for your company.
               </div>
+            }
+            <div className="col-12 mt-2">
+              <h4>Creation</h4> <UTCDate date={managing.created} separator=""></UTCDate>
             </div>
-          }
-          { managing.owner != ZERO_ADDRESS &&
-            <div className="small text-warning mt-2">
-              <span style={{ marginRight: '0.5em' }}>
-                <ExclamationCircle className="fix-icon-alignment" />
-              </span>
-              Your entity smart contract is not a wallet. Go to Multisig to create
-              a digital wallet for your company.
-            </div>
-          }
+            { managing.renewal &&
+              <div className="col-12 col-sm-6 mt-2">
+                { managing.renewal.getTime() > Date.now() && 
+                  <div className="text-small">
+                    <h4>Next Renewal</h4> <UTCDate date={managing.renewal} separator=""></UTCDate>
+                  </div>
+                }
+                { managing.renewal.getTime() < Date.now() && 
+                  <div className="card">
+                    <div className="text-small">Please, access <a href="" onClick={handleChangeSection.bind(
+                          undefined,
+                          ManageSection.PLUGINS
+                        )}>Billing</a> to renew your entity. Expiration date <b><UTCDate date={managing.renewal} separator=""></UTCDate></b>.
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
           { managing.owner == ZERO_ADDRESS &&
             <div className="text-warning">
               <span style={{ marginRight: '0.5em' }}>

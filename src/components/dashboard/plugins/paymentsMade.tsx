@@ -32,7 +32,6 @@ export const PaymentsMade = ({ messages, wallet }: ListMessagesProps) => {
         currency: m.body.message.currency
       }
     })
-    console.log(tempMessages[0])
 
   return tempMessages.map((m) => (
     <tr className="small" key={m.id}>
