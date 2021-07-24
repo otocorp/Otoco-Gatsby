@@ -144,7 +144,7 @@ const SeriesOverview: FC<Props> = ({
             <div>
               <table className="table">
                 <thead>
-                  <tr>
+                  <tr className="d-none d-md-table-row">
                     <th scope="col">Item</th>
                     <th scope="col" className="text-end">
                       Amount
@@ -152,6 +152,10 @@ const SeriesOverview: FC<Props> = ({
                     <th scope="col" className="text-end">
                       Action
                     </th>
+                  </tr>
+                  <tr className="d-md-none">
+                    <th scope="col">Item</th>
+                    <th scope="col"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -189,7 +193,7 @@ const SeriesOverview: FC<Props> = ({
             </div>
             <table className="table">
               <thead>
-                <tr>
+                <tr className="d-none d-md-table-row">
                   <th scope="col">Item</th>
                   <th scope="col">ID/Hash</th>
                   <th scope="col" className="text-end">
@@ -197,6 +201,12 @@ const SeriesOverview: FC<Props> = ({
                   </th>
                   <th scope="col" className="text-end">
                     Amount
+                  </th>
+                </tr>
+                <tr className="d-md-none">
+                  <th scope="col">Item</th>
+                  <th scope="col" className="text-end">
+                    Action
                   </th>
                 </tr>
               </thead>

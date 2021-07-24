@@ -33,8 +33,8 @@ export const PaymentsDue = ({
       <td>
         {m.product} <span className="text-secondary">({m.billId})</span>
       </td>
-      <td className="text-end">{m.amount} USD</td>
-      <td className="text-end">
+      <td className="d-none d-md-table-cell text-end">{m.amount} USD</td>
+      <td className="d-none d-md-table-cell text-end">
         <button
           className="btn btn-primary btn-sm"
           onClick={handle.bind(
@@ -46,6 +46,20 @@ export const PaymentsDue = ({
           )}
         >
           Pay
+        </button>
+      </td>
+      <td className="d-md-none text-end">
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={handle.bind(
+            undefined,
+            m.product,
+            m.messageId,
+            m.billId,
+            m.amount
+          )}
+        >
+          Pay {m.amount} USD
         </button>
       </td>
     </tr>
