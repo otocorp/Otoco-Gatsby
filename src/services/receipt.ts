@@ -2,6 +2,7 @@
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 
 import receiptPdf from '../../static/pdfs/receipt.pdf'
+import { PaymentMessage } from '../state/account/types'
 
 const saveByteArray = (reportName:string, byte:Uint8Array) => {
     const blob = new Blob([byte], { type: 'application/pdf' })
@@ -36,6 +37,7 @@ export const downloadReceipt = async (
   entity: string,
   wallet: string,
   amount: number,
+  object:PaymentMessage
 ): Promise<void> => {
     const fetchedAgreement = await fetch(receiptPdf)
     const pdfBuffer = await fetchedAgreement.arrayBuffer()
@@ -68,6 +70,13 @@ export const downloadReceipt = async (
     form.getTextField('wallet').setText(wallet)
     form.getTextField('amount').setText(`${amount} ${currency}`)
     form.getTextField('url').setText(envUrls[`${environment}_${method.toLowerCase()}`]+id)
+    pdfDoc.setAuthor('Otonomos Blockchain Technologies Ltd.')
+    pdfDoc.setLanguage('en-us')
+    pdfDoc.setCreationDate(date)
+    pdfDoc.setModificationDate(new Date())
+    pdfDoc.setCreator('otoco.io')
+    pdfDoc.setSubject(JSON.stringify(object))
+    pdfDoc.setTitle('Payment Receipt - '+ id)
     form.flatten()
     const pdfBytes = await pdfDoc.save()
     saveByteArray(`receipt-${product}.pdf`, pdfBytes)

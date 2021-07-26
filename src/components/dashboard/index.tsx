@@ -179,7 +179,7 @@ const Overview: FC<Props> = ({ account, network, series, dispatch }: Props) => {
         >
           <WelcomeForm></WelcomeForm>
         </CSSTransition>
-        {!account && <div className="card">No connected account.</div>}
+        {!account && <div className="card">Connect your wallet to get access.</div>}
         <h5>Entities</h5>
         <CSSTransition
           in={loading}

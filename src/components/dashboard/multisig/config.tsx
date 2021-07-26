@@ -46,18 +46,17 @@ const Config: FC<Props> = ({
 
   const ListOwners = () => {
     return owners.map((owner, idx) => (
-      <div className="small" key={idx}>
-        <div>
-          {owner.substring(0, 12) +
-            '...' +
-            owner.substring(owner.length - 6, owner.length - 1)}
-          <button
-            className="btn btn-sm"
-            onClick={handleRemoveOwner.bind(undefined, idx)}
-          >
-            <XLg>&#10005;</XLg>
-          </button>
-        </div>
+      <div className="multisig-owner-card mt-2 me-2">
+        {owner.substring(0, 6) +
+          '...' +
+          owner.substring(owner.length - 6, owner.length)}
+        {owner.toLocaleLowerCase() == account?.toLocaleLowerCase() && <span className="text-white-50"> (you)</span>}
+        <button
+          className="btn btn-sm"
+          onClick={handleRemoveOwner.bind(undefined, idx)}
+        >
+          <XLg>&#10005;</XLg>
+        </button>
       </div>
     ))
   }
@@ -201,11 +200,12 @@ const Config: FC<Props> = ({
       <div className="mb-4">
         Create a Gnosis-Safe Multisig wallet to store your company assets.
       </div>
-      <div className="">Insert some wallet owners:</div>
+      <div className="small">Your Safe will have one or more owners. We have prefilled the first owner with your connected wallet details.</div>
       {!transaction && (
         <div>
           <div className="row">
-            <div className="mb-2 col-12">
+            <h5 className="mt-2">Owners:</h5>
+            <div className="mb-2 d-flex flex-wrap">
               <ListOwners></ListOwners>
             </div>
             <div className="mb-2 col-12">
@@ -217,7 +217,7 @@ const Config: FC<Props> = ({
               <input
                 type="text"
                 className="form-control right"
-                placeholder="Paste an owner address to insert..."
+                placeholder="Fill an owner address..."
                 aria-label="Text input with button"
                 value={currentOwner}
                 onChange={handleOwnerInputChange}
@@ -230,6 +230,7 @@ const Config: FC<Props> = ({
             </div>
           </div>
           <div className="row">
+            <div className="col-12 small">Any transaction requires the confirmation of:</div>
             <div className="input-group mb-2 col-12 col-md-6">
               <input
                 type="text"
@@ -240,7 +241,7 @@ const Config: FC<Props> = ({
               />
               <div className="input-group-append">
                 <span className="btn btn-primary disabled">
-                  Approval threshold
+                  out of {owners.length} owner(s)
                 </span>
               </div>
             </div>

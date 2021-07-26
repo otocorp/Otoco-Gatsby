@@ -15,6 +15,7 @@ import {
   MultisigActionTypes,
 } from '../../../state/management/multisig/types'
 import { IState } from '../../../state/types'
+import { ExclamationCircle } from 'react-bootstrap-icons'
 
 type TokenListTransaction = {
   status: number
@@ -198,7 +199,10 @@ const Wallet: FC<Props> = ({
               Manage Wallet
             </button>
           </div>
-          <div className="col-12 col-md-8 py-2 text-warning small">
+          <div className="col-12 col-md-8 py-2 text-white-50 small">
+            <span style={{ marginRight: '0.5em' }}>
+              <ExclamationCircle className="fix-icon-alignment" />
+            </span>
             To manage your multisig you will be redirected to Gnosis-Safe App.
           </div>
         </div>

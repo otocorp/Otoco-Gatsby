@@ -56,14 +56,14 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
         <div className="small">Take critical decisions related to the company:</div>
         <div className="mt-2">
           {!closeFormOpened && (
-          <button className="btn btn-warning mt-4" onClick={handleClickClose}>
+          <button className="btn btn-warning mt-4 px-4 py-3" onClick={handleClickClose}>
             Close Entity
           </button>
           )}
           {closeFormOpened && !transaction && (
           <div className="card text-white">
             <p>After confirm your ownership will be revoked. This operation couldn't be undone. Are you sure want to close your entity?</p>
-            <button className="btn btn-warning mt-4" onClick={handleClickConfirmClose}>
+            <button className="btn btn-warning mt-4 px-4 py-3" onClick={handleClickConfirmClose}>
               Confirm Close Entity
             </button>
           </div>

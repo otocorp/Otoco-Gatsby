@@ -64,20 +64,28 @@ const MailboxForm: FC<Props> = ({
       })
       await setWaitTimer()
       const pk = await Textile.generateIdentity(account)
-      if (!pk) throw 'Error: Private Key not created.'
-      setCreation({
-        step: 2,
-        message:
-          'Now we need you to sign a second message to prove the link between the public key and your connected wallet.',
+      if (!pk) throw 'Error authenticating wallet.'
+      const alreadyAssigned = await Textile.sendRequest({
+        method:'key',
+        wallet: account,
+        key: pk.public.toString()
       })
-      await setWaitTimer()
-      const signature = await Textile.generatePublicKeyValidation(
-        account,
-        pk.public.toString()
-      )
-      if (!signature) throw 'Error: Signature not created'
-      await Textile.registerNewKey(account, pk.public.toString(), signature)
-      Textile.storeKeys(account)
+      console.log(alreadyAssigned)
+      if (!alreadyAssigned) {
+        setCreation({
+          step: 2,
+          message:
+            'Now we need you to sign a second message to prove the link between the public key and your connected wallet. This will required just once.',
+        })
+        await setWaitTimer()
+        const signature = await Textile.generatePublicKeyValidation(
+          account,
+          pk.public.toString()
+        )
+        if (!signature) throw 'Error: Signature not created'
+        await Textile.registerNewKey(account, pk.public.toString(), signature)
+      }
+      // Textile.storeKeys(account)
       dispatch({ type: SET_PRIVATEKEY, payload: pk })
     } catch (err) {
       setCreation(null)
@@ -92,7 +100,7 @@ const MailboxForm: FC<Props> = ({
           <div className="row">
             {!creation && (
               <div className="col-12 col-md-6 col-lg-8">
-                <h4>Wallet Authentication</h4>
+                <h4>Access everything in one place</h4>
                 <p className="small">
                   Sign with your connected wallet to send and receive encrypted
                   messages related to your entities, get file storage on IPFS,
@@ -134,7 +142,7 @@ const MailboxForm: FC<Props> = ({
               <div className="col-8">
                 {inboxMessages.length == 0 && (
                   <div>
-                    <h4>Encrypted messaging and file storage activated!</h4>
+                    <h4>Account and keys authenticated!</h4>
                     <p className="small">No new messages.</p>
                     <Link
                       className="btn btn-primary-outline btn-sm"
@@ -146,7 +154,7 @@ const MailboxForm: FC<Props> = ({
                 )}
                 {inboxMessages.length > 0 && (
                   <div>
-                    <h4>Encrypted messaging and file storage activated!</h4>
+                    <h4>Account and keys authenticated!</h4>
                     <p className="small">
                       You have {inboxMessages.length} new messages.
                     </p>

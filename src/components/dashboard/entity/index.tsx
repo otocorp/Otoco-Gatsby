@@ -118,7 +118,7 @@ const SeriesManagement: FC<Props> = ({
               environment: network,
               entity: id.toLowerCase()
             })
-            newSeries.renewal = new Date(res.expiration-36892800000)
+            newSeries.renewal = new Date(res.expiration-5356800000)
           } catch (err) {}
           dispatch({ type: SET_MANAGE_SERIES, payload: newSeries })
           setLoading(false)

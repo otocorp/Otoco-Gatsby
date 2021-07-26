@@ -77,29 +77,30 @@ const AccountWidget: FC<Props> = ({
     setCollapse(true)
   }, [account, show])
 
-  React.useEffect(() => {
-    setTimeout(async () => {
-      if (!account) return
-      const cached = await Textile.fetchIdentity(
-        account,
-        process.env.GATSBY_PASSWORD
-      )
-      if (cached) {
-        if (cached.alias.length > 0)
-          dispatch({ type: SET_ALIAS, payload: cached.alias })
-        dispatch({
-          type: SET_PRIVATEKEY,
-          payload: PrivateKey.fromString(cached.key),
-        })
-        // Textile.setCallbackInbox(callbackInboxNewMessage)
-      } else {
-        dispatch({ type: SET_PRIVATEKEY, payload: null })
-        dispatch({ type: SET_ALIAS, payload: null })
-      }
-    }, 0)
-  }, [account])
+  // React.useEffect(() => {
+  //   setTimeout(async () => {
+  //     if (!account) return
+  //     const cached = await Textile.fetchIdentity(
+  //       account,
+  //       process.env.GATSBY_PASSWORD
+  //     )
+  //     if (cached) {
+  //       if (cached.alias.length > 0)
+  //         dispatch({ type: SET_ALIAS, payload: cached.alias })
+  //       dispatch({
+  //         type: SET_PRIVATEKEY,
+  //         payload: PrivateKey.fromString(cached.key),
+  //       })
+  //       // Textile.setCallbackInbox(callbackInboxNewMessage)
+  //     } else {
+  //       dispatch({ type: SET_PRIVATEKEY, payload: null })
+  //       dispatch({ type: SET_ALIAS, payload: null })
+  //     }
+  //   }, 0)
+  // }, [account])
 
   React.useEffect(() => {
+    if (!privatekey) return
     const interval = setTimeout(async () => {
       dispatch({
         type: SET_INBOX_MESSAGES,

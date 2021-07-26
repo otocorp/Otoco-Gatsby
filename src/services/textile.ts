@@ -52,8 +52,6 @@ interface TextileInterface {
   callbackInbox: (message: DecryptedMailbox) => void | null
   generateMessageForEntropy: (
     address: string,
-    application_name: string,
-    secret: string
   ) => string
   generateMessageForPublicKeyValidation: (publickey: string) => string
   generateIdentity: (address: string) => Promise<PrivateKey | null>
@@ -96,33 +94,13 @@ const Textile: TextileInterface = {
   callbackInbox: null,
 
   generateMessageForEntropy(
-    address: string,
-    application_name: string,
-    secret: string
+    account: string
   ): string {
     return (
-      'READ THIS MESSAGE CAREFULLY. ' +
-      'DO NOT SHARE THIS SIGNED MESSAGE WITH ANYONE OR THEY WILL HAVE READ AND WRITE' +
-      'ACCESS TO THIS APPLICATION. ' +
-      'DO NOT SIGN THIS MESSAGE IF THE FOLLOWING IS NOT TRUE OR YOU DO NOT CONSENT' +
-      'TO THE CURRENT APPLICATION HAVING ACCESS TO THE FOLLOWING APPLICATION. \n\n' +
-      'The Ethereum address used by this application is: \n' +
-      address +
-      '\n\n' +
-      'By signing this message, you authorize the current application to use the ' +
-      'following app associated with the above address: \n' +
-      '\n' +
-      application_name +
-      '\n\n' +
-      'The hash of your non-recoverable, private, non-persisted password or secret ' +
-      'phrase is: \n' +
-      '\n' +
-      secret +
-      '\n\n' +
-      'ONLY SIGN THIS MESSAGE IF YOU CONSENT TO THE CURRENT PAGE ACCESSING THE KEYS ' +
-      'ASSOCIATED WITH THE ABOVE ADDRESS AND APPLICATION. ' +
-      'AGAIN, DO NOT SHARE THIS SIGNED MESSAGE WITH ANYONE OR THEY WILL HAVE READ AND ' +
-      'WRITE ACCESS TO THIS APPLICATION. \n'
+      'PLEASE MAKE SURE THAT YOU ARE SIGNING THIS MESSAGE OTOCO.IO DOMAIN. \n' +
+      'This signature will be used to generate an entropy for a key-pair. \n' +
+      'Do not share this signed message with anyone or they will have read/write acess to this application. \n' +
+      'Your current account: ' + account
     )
   },
 
@@ -142,11 +120,7 @@ const Textile: TextileInterface = {
     // avoid sending the raw secret by hashing it first
     const secretHashed = web3.utils.sha3(process.env.GATSBY_PASSWORD)
     if (!secretHashed) return null
-    const message = this.generateMessageForEntropy(
-      address,
-      'otoco-dapp',
-      secretHashed
-    )
+    const message = this.generateMessageForEntropy(address)
     const signedText = await web3.eth.personal.sign(message, address)
     const signatureHash = web3.utils.keccak256(signedText).replace('0x', '')
     // The following line converts the hash in hex to an array of 32 integers.
@@ -351,7 +325,6 @@ const Textile: TextileInterface = {
     await this.user.setupMailbox()
     const now = new Date()
     this.lastAuthorization = now.getTime()
-    window.priv = this.privateKey
     // await this.user.watchInbox(await this.user.getMailboxID(), this.watchInbox)
     return this.client
   },
@@ -382,7 +355,7 @@ const Textile: TextileInterface = {
     const now = new Date()
     try {
     if (!this.lastAuthorization) return await this.authorize()
-    if (this.lastAuthorization + 120000 < now.getTime())
+    if (this.lastAuthorization + 60000 < now.getTime())
       return await this.authorize()
     } catch (err) {
       if (err == "No private key found") console.log('The accound has no Textile key registered.')

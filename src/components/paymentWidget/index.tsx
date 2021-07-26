@@ -202,6 +202,18 @@ const PaymentWidget: FC<Props> = ({
     }
   }
   const handleClickDownload = async () => {
+    const object = {
+      _id: receipt?.receipt,
+      method: receipt?.method,
+      currency: receipt?.currency,
+      entity: managing?.contract,
+      environment: network,
+      timestamp: receipt?.timestamp,
+      product,
+      amount,
+      status: 'PROCESSING',
+      body: { billRef: billId },
+    }
     await downloadReceipt(
       new Date(receipt?.timestamp),
       receipt?.receipt,
@@ -211,7 +223,8 @@ const PaymentWidget: FC<Props> = ({
       receipt?.method,
       managing?.contract,
       account,
-      amount
+      amount,
+      object
     )
     setError('')
     setReceipt(null)

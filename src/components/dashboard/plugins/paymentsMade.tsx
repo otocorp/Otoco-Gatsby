@@ -29,7 +29,8 @@ export const PaymentsMade = ({ messages, wallet }: ListMessagesProps) => {
         timestamp: m.body.message.timestamp,
         env: m.body.message.environment,
         amount: m.body.message.amount,
-        currency: m.body.message.currency
+        currency: m.body.message.currency,
+        object: m.body.message
       }
     })
 
@@ -48,7 +49,8 @@ export const PaymentsMade = ({ messages, wallet }: ListMessagesProps) => {
             m.method,
             m.entity,
             wallet,
-            m.amount
+            m.amount,
+            m.object
             )}>
             <Download
               style={{ marginLeft: '0.6em' }}
@@ -92,7 +94,8 @@ export const PaymentsMade = ({ messages, wallet }: ListMessagesProps) => {
           m.method,
           m.entity,
           wallet,
-          m.amount
+          m.amount,
+          m.object
           )}>
           <Download
             className="fix-icon-alignment"
