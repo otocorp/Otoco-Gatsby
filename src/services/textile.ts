@@ -46,6 +46,7 @@ const messageDecoder = async (
 interface TextileInterface {
   user: Users | null
   client: Client | null
+  account: string | null
   privateKey?: PrivateKey
   authorized: string | null
   lastAuthorization: number | null
@@ -65,7 +66,7 @@ interface TextileInterface {
     address: string,
     secret: string
   ) => Promise<CachedWallet | null>
-  loginWithChallenge: (identity: Identity) => Promise<UserAuth>
+  loginWithChallenge: (identity: Identity, account:string) => Promise<UserAuth>
   registerNewKey: (wallet: string, key: string, sig: string) => Promise<void>
   authorize: () => Promise<Client | null>
   watchInbox: (
@@ -88,6 +89,7 @@ interface TextileInterface {
 const Textile: TextileInterface = {
   user: null,
   client: null,
+  account: null,
   privateKey: undefined,
   authorized: null, // Authorized Address
   lastAuthorization: null,
@@ -132,6 +134,7 @@ const Textile: TextileInterface = {
         'Hash of signature is not the correct size! Something went wrong!'
       )
     }
+    this.account = address
     this.privateKey = PrivateKey.fromRawEd25519Seed(Uint8Array.from(sigArray))
     // Your app can now use this identity for generating a user Mailbox, Threads, Buckets, etc
     return this.privateKey
@@ -183,7 +186,7 @@ const Textile: TextileInterface = {
     return cached
   },
 
-  loginWithChallenge: async (identity: Identity): Promise<UserAuth> => {
+  loginWithChallenge: async (identity: Identity, account:string): Promise<UserAuth> => {
     return new Promise((resolve, reject) => {
       /**
        * Configured for our development server
@@ -205,6 +208,7 @@ const Textile: TextileInterface = {
         socket.send(
           JSON.stringify({
             pubkey: publicKey,
+            wallet: account,
             type: 'token',
           })
         )
@@ -319,7 +323,7 @@ const Textile: TextileInterface = {
 
   authorize: async function () {
     if (!this.privateKey) throw 'No private key found'
-    const auth: UserAuth = await this.loginWithChallenge(this.privateKey)
+    const auth: UserAuth = await this.loginWithChallenge(this.privateKey, this.account)
     this.user = await Users.withUserAuth(auth)
     this.client = await Client.withUserAuth(auth)
     await this.user.setupMailbox()
