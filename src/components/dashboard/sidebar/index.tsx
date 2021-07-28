@@ -12,7 +12,7 @@ import {
   SeriesType,
   Badges,
 } from '../../../state/management/types'
-import { ChevronLeft, Inboxes, Gear } from 'react-bootstrap-icons'
+import { ChevronLeft, Inboxes, Gear, Wallet2 } from 'react-bootstrap-icons'
 import OtocoIcon from '../../icons'
 import EntityCard from './entityCard'
 import { Link } from 'gatsby'
@@ -93,8 +93,8 @@ const SidebarSeries: FC<Props> = ({
                   ManageSection.MULTISIG
                 )}
               >
-                <OtocoIcon icon="keys" className="me-3 mb-1" />
-                Multisig
+                <Wallet2 className="me-3 mb-1" />
+                Asset Wallet
               </a>
               <a
                 className="col-12 btn"

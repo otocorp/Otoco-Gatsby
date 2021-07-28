@@ -2,6 +2,7 @@ import React, { Dispatch, FC, useState } from 'react'
 import Web3 from 'web3'
 import BN from 'bn.js'
 import { connect } from 'react-redux'
+import CurrencyInput from 'react-currency-input-field';
 import FactoryContract from '../../../smart-contracts/TokenFactory'
 import MasterRegistry from '../../../smart-contracts/MasterRegistry'
 import TokenContract from '../../../smart-contracts/OtocoToken'
@@ -42,8 +43,8 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
   const handleChangeSymbol = (event: React.FormEvent<HTMLInputElement>) => {
     setSymbol(event.target.value)
   }
-  const handleChangeShares = (event: React.FormEvent<HTMLInputElement>) => {
-    setShares(parseInt(event.target.value))
+  const handleChangeShares = (value:string | void) => {
+    setShares(parseInt(value))
   }
   const handleExistingChanges = (event: React.FormEvent<HTMLInputElement>) => {
     setExisting(event.target.value)
@@ -217,12 +218,12 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
           <div className="w-100"></div>
           <div className="col-12 col-md-8">
             <div className="input-group mb-2">
-              <input
-                type="text"
+              <CurrencyInput
                 className="form-control right"
                 placeholder="e.g.: 1000000"
-                aria-label="Text input with dropdown button"
-                onChange={handleChangeShares}
+                defaultValue={0}
+                decimalsLimit={0}
+                onValueChange={handleChangeShares}
               />
               <div className="input-group-append">
                 <div className="btn btn-primary disabled">Token Quantity</div>
@@ -236,19 +237,21 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
             </button>
           </div>
           <p className="mt-4">Or link an existing token ERC20</p>
-          <div className="input-group mb-2">
-              <input
-                type="text"
-                className="form-control right"
-                placeholder="e.g.: 0x000123123..."
-                aria-label="Text input with dropdown button"
-                onChange={handleExistingChanges}
-              />
-              <div className="input-group-append">
-                <div className="btn btn-primary" onClick={handleClickAttachExisting}>Attach Token</div>
+          <div className="row col-12 col-md-10 col-lg-8">
+            <div className="input-group mb-2">
+                <input
+                  type="text"
+                  className="form-control right"
+                  placeholder="e.g.: 0x000123123..."
+                  aria-label="Text input with dropdown button"
+                  onChange={handleExistingChanges}
+                />
+                <div className="input-group-append">
+                  <div className="btn btn-primary" onClick={handleClickAttachExisting}>Attach Token</div>
+                </div>
               </div>
             </div>
-        </div>
+          </div>
       )}
       {transaction && (
         <TransactionMonitor

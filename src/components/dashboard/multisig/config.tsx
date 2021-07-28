@@ -15,6 +15,7 @@ import {
   MultisigActionTypes,
 } from '../../../state/management/multisig/types'
 import { IState } from '../../../state/types'
+import { CSSTransition } from 'react-transition-group'
 
 interface Props {
   account?: string | null
@@ -35,6 +36,7 @@ const Config: FC<Props> = ({
   const [currentOwner, setCurrentOwner] = useState<string>('')
   const [owners, setOwners] = useState<string[]>([])
   const [threshold, setThreshold] = useState<number>(1)
+  const [multisig, setMultisig] = useState<boolean>(false)
   const [existing, setExisting] = useState('')
   const [transaction, setTransaction] = useState<string | null>(null)
 
@@ -46,13 +48,13 @@ const Config: FC<Props> = ({
 
   const ListOwners = () => {
     return owners.map((owner, idx) => (
-      <div className="multisig-owner-card mt-2 me-2">
+      <div className="multisig-owner-card mt-2 me-2 px-3">
         {owner.substring(0, 6) +
           '...' +
           owner.substring(owner.length - 6, owner.length)}
         {owner.toLocaleLowerCase() == account?.toLocaleLowerCase() && <span className="text-white-50"> (you)</span>}
         <button
-          className="btn btn-sm"
+          className={`btn btn-sm ${!multisig || owners.length < 2 ? 'disabled':''}`}
           onClick={handleRemoveOwner.bind(undefined, idx)}
         >
           <XLg>&#10005;</XLg>
@@ -92,6 +94,10 @@ const Config: FC<Props> = ({
     setCurrentOwner('')
   }
 
+  const handleClickAddOwners = () => {
+    setMultisig(true)
+  }
+
   const handleExistingChanges = (event: React.FormEvent<HTMLInputElement>) => {
     setExisting(event.target.value)
   }
@@ -125,6 +131,10 @@ const Config: FC<Props> = ({
   }
 
   const handleClickDeploy = async () => {
+    if (owners.length < 1) {
+      setError('Your wallet should have at least one owner.')
+      return
+    }
     if (threshold > owners.length) {
       setError('Threshold should not be bigger than owners quantity.')
       return
@@ -198,16 +208,28 @@ const Config: FC<Props> = ({
   return (
     <div>
       <div className="mb-4">
-        Create a Gnosis-Safe Multisig wallet to store your company assets.
+        Create a Gnosis-Safe wallet to store your company assets.
       </div>
       <div className="small">Your Safe will have one or more owners. We have prefilled the first owner with your connected wallet details.</div>
+      <div className="row">
+        <h5 className="mt-2">Owners:</h5>
+        <div className="mb-2 d-flex flex-wrap">
+          <ListOwners></ListOwners>
+        </div>
+      </div>
       {!transaction && (
-        <div>
+        <CSSTransition
+          in={multisig}
+          timeout={{
+            appear: 200,
+            enter: 200,
+            exit: 200,
+          }}
+          classNames="slide-up"
+          unmountOnExit
+        >
+          <div>
           <div className="row">
-            <h5 className="mt-2">Owners:</h5>
-            <div className="mb-2 d-flex flex-wrap">
-              <ListOwners></ListOwners>
-            </div>
             <div className="mb-2 col-12">
               {error && <p className="text-warning small">{error}</p>}
             </div>
@@ -231,7 +253,7 @@ const Config: FC<Props> = ({
           </div>
           <div className="row">
             <div className="col-12 small">Any transaction requires the confirmation of:</div>
-            <div className="input-group mb-2 col-12 col-md-6">
+            <div className="input-group mb-2 col-12 col-md-10 col-lg-8">
               <input
                 type="text"
                 className="form-control right"
@@ -246,10 +268,16 @@ const Config: FC<Props> = ({
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </CSSTransition>
       )}
       {!transaction && (
         <div>
+          { !multisig && 
+            <button className="btn btn-primary mt-4 me-2" onClick={handleClickAddOwners}>
+              + more owners
+            </button>
+          }
           <button className="btn btn-primary mt-4" onClick={handleClickDeploy}>
             Create Wallet
           </button>

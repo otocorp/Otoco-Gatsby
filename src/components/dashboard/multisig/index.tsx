@@ -78,7 +78,7 @@ const SeriesMultisig: FC<Props> = ({
   return (
     <div>
       <div className="d-grid gap-1 mb-5">
-        <h3 className="m-0">Multisig Wallet</h3>
+        <h3 className="m-0">Digital Asset Wallet</h3>
         {loading && (
           <div className="d-flex justify-content-center">
             <div className="row">
