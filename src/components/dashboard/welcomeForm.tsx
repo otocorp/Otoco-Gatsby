@@ -70,7 +70,6 @@ const MailboxForm: FC<Props> = ({
         wallet: account,
         key: pk.public.toString()
       })
-      console.log(alreadyAssigned)
       if (!alreadyAssigned) {
         setCreation({
           step: 2,

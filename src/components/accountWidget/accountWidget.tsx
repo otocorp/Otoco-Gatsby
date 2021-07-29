@@ -101,7 +101,6 @@ const AccountWidget: FC<Props> = ({
 
   React.useEffect(() => {
     if (!privatekey) return
-    console.log(privatekey)
     const interval = setTimeout(async () => {
       dispatch({
         type: SET_INBOX_MESSAGES,

@@ -66,7 +66,7 @@ const SeriesOverview: FC<Props> = ({
             <div className="col-12 mt-2">
               <h4>Creation</h4> <UTCDate date={managing.created} separator=""></UTCDate>
             </div>
-            { managing.renewal && managing.access &&
+            { managing.renewal && managing.badges.length > 0 &&
               <div className="col-12 col-sm-6 mt-2">
                 { managing.renewal.getTime() > Date.now() && 
                   <div className="text-small">
