@@ -28,6 +28,7 @@ export type SeriesType = {
   owner: string
   closed: boolean
   badges: Badges[]
+  access: boolean
 }
 
 interface SetOwnSeries {

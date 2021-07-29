@@ -22,7 +22,8 @@ interface Props {
 
 const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
   const [closeFormOpened, setCloseFormOpened] = useState<boolean>(false)
-  const [transaction, setTransaction] = useState<string>('')
+  const [transactionTransfer, setTransactionTransfer] = useState<string>('')
+  const [transactionClose, setTransactionClose] = useState<string>('')
   const [newOwner, setNewOwner] = useState<string>()
 
   const handleClickClose = () => {
@@ -42,7 +43,7 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
       .methods.renounceOwnership()
       .send(requestInfo, (error, hash: string) => {
         if (error) return console.error(error)
-        setTransaction(hash)
+        setTransactionClose(hash)
       })
   }
 
@@ -62,7 +63,7 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
       .methods.transferOwnership(newOwner)
       .send(requestInfo, (error, hash: string) => {
         if (error) return console.error(error)
-        setTransaction(hash)
+        setTransactionTransfer(hash)
       })
   }
 
@@ -79,6 +80,7 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
           <div className="col-12 col-md-8 col-lg-6 mt-4">
             <h4>Transfer Ownership</h4>
             <p className="small">Move the ownership of your entity to a new owner.</p>
+            { !transactionTransfer && (
             <div className="input-group mb-2">
               <input
                 type="text"
@@ -91,36 +93,42 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
                 <div className="btn btn-primary" onClick={handleClickTransferOwnership}>Transfer Ownership</div>
               </div>
             </div>
-        </div>
-        <div className="row">
-          <div className="col-12 col-md-8 col-lg-6 mt-4">
-            <h4>Close Entity</h4>
-            <div className="mt-2">
-              <p className="small">Revoke ownership of your entity and close it.</p>
-              {!closeFormOpened && (
-                <button className="btn btn-warning px-4 py-3" onClick={handleClickClose}>
-                  Close Entity
-                </button>
-              )}
-              {closeFormOpened && !transaction && (
-              <div className="card text-white">
-                <p>
-                <span style={{ marginRight: '0.5em' }}>
-              <ExclamationCircle className="fix-icon-alignment" />
-            </span>After confirm your ownership will be revoked. This operation couldn't be undone. Are you sure want to close your entity?</p>
-                <button className="btn btn-warning mt-4 px-4 py-3" onClick={handleClickConfirmClose}>
-                  Confirm Close Entity
-                </button>
-              </div>
-              )}
-              {transaction && (
+            )}
+            { transactionTransfer && (
                 <TransactionMonitor
-                  hash={transaction}
-                  title="Closing Entity"
+                  hash={transactionTransfer}
+                  title="Transfer Ownership"
                   callbackSuccess={closingFinished}
                 ></TransactionMonitor>
               )}
+        </div>
+        <div className="col-12 col-md-8 col-lg-6 mt-4">
+          <h4>Close Entity</h4>
+          <div className="mt-2">
+            <p className="small">Revoke ownership of your entity and close it.</p>
+            {!closeFormOpened && (
+              <button className="btn btn-warning px-4" onClick={handleClickClose} style={{padding: "12px 24px", borderRadius: "8px"}}>
+                Close Entity
+              </button>
+            )}
+            { closeFormOpened && !transactionClose && (
+            <div className="card text-white">
+              <p>
+              <span style={{ marginRight: '0.5em' }}>
+            <ExclamationCircle className="fix-icon-alignment" />
+            </span>After confirm your ownership will be revoked. This operation couldn't be undone. Are you sure want to close your entity?</p>
+              <button className="btn btn-warning mt-4 px-4 py-3" onClick={handleClickConfirmClose}>
+                Confirm Close Entity
+              </button>
             </div>
+            )}
+            { transactionClose && (
+              <TransactionMonitor
+                hash={transactionClose}
+                title="Closing Entity"
+                callbackSuccess={closingFinished}
+              ></TransactionMonitor>
+            )}
           </div>
         </div>
       </div>

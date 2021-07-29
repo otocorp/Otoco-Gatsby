@@ -76,7 +76,8 @@ const SeriesManagement: FC<Props> = ({
           name: '',
           owner: '',
           badges: [],
-          closed: false
+          closed: false,
+          access: false,
         }
         let otocoNetwork = GraphNetwork.mainnet
         try {
@@ -111,6 +112,7 @@ const SeriesManagement: FC<Props> = ({
           if (company.creator == account.toLowerCase())
             newSeries.badges.push(Badges.FIRST)
           
+          newSeries.access = company.owner == account.toLowerCase()
           try {
             const res = await Textile.sendRequest({
               method:'expiration',
@@ -119,6 +121,7 @@ const SeriesManagement: FC<Props> = ({
               entity: id.toLowerCase()
             })
             newSeries.renewal = new Date(res.expiration-5356800000)
+            newSeries.access = newSeries.access && newSeries.renewal.getTime() > Date.now()
           } catch (err) {}
           dispatch({ type: SET_MANAGE_SERIES, payload: newSeries })
           setLoading(false)

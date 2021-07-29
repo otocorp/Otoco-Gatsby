@@ -35,45 +35,6 @@ interface Props {
   dispatch: Dispatch<ManagementActionTypes | AccountActionTypes>
 }
 
-interface ListMessagesProps {
-  messages: DecryptedMailbox[]
-  handleDelete: (id: string) => Promise<void>
-}
-
-const ListMessages = ({ messages, handleDelete }: ListMessagesProps) => {
-  return messages.map((m) => (
-    <tr key={m.id}>
-      {/* <td>{m.from.substring(0, 5)} ...</td> */}
-      <td>
-        {m.from.substring(0, 5)}...
-        {m.from.substring(m.from.length - 5, m.from.length)}
-      </td>
-      <td>
-        <ReactJson
-          src={m.body}
-          theme="monokai"
-          collapseStringsAfterLength={8}
-          displayDataTypes={false}
-          displayObjectSize={false}
-          collapsed={true}
-          enableClipboard={false}
-          style={{
-            background: 'transparent',
-          }}
-        />
-      </td>
-      <td className="d-none d-md-block">
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={handleDelete.bind(undefined, m.id)}
-        >
-          erase
-        </button>
-      </td>
-    </tr>
-  ))
-}
-
 const SeriesIdentity: FC<Props> = ({
   account,
   network,
@@ -84,25 +45,11 @@ const SeriesIdentity: FC<Props> = ({
   outboxMessages,
   dispatch,
 }: Props) => {
-  const [loading, setLoading] = useState<boolean>(false)
   const [hasEmail, setHasEmail] = useState<boolean>(false)
   const [email, setEmail] = useState('')
   const [aliasTemp, setAlias] = useState<string | undefined>(undefined)
   // const [messagesIn, setInMessages] = useState<DecryptedMailbox[]>([])
   // const [messagesOut, setOutMessages] = useState<DecryptedMailbox[]>([])
-
-  React.useEffect(() => {
-    setTimeout(async () => {
-      dispatch({
-        type: SET_INBOX_MESSAGES,
-        payload: await Textile.listInboxMessages(),
-      })
-      dispatch({
-        type: SET_OUTBOX_MESSAGES,
-        payload: await Textile.listOutboxMessages(),
-      })
-    }, 0)
-  }, [account])
 
   const validateEmail = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -150,7 +97,7 @@ const SeriesIdentity: FC<Props> = ({
     if (!cachedString) return null
     const cached: CachedWallet = JSON.parse(cachedString)
     cached.alias = aliasTemp
-    localStorage.setItem(`did:eth:${account.substr(2)}`, JSON.stringify(cached))
+    localStorage.removeItem(`did:eth:${account.substr(2)}`)
     dispatch({ type: SET_ALIAS, payload: aliasTemp })
   }
 

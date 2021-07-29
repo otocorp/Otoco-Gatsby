@@ -53,8 +53,7 @@ const SidebarSeries: FC<Props> = ({
               />
             </div>
           )}
-          {/* The Renewal time + 2 monts must be before current time  */}
-          {managing && managing?.badges.length > 0 && (!managing.renewal || managing.renewal.getTime() > Date.now()) && (
+          {managing && managing.access && (
             <div>
               <Link className="d-block d-md-none col-12 btn" to={`/dashpanel/`}>
                 <ChevronLeft className="fix-icon-alignment" />

@@ -101,6 +101,7 @@ const AccountWidget: FC<Props> = ({
 
   React.useEffect(() => {
     if (!privatekey) return
+    console.log(privatekey)
     const interval = setTimeout(async () => {
       dispatch({
         type: SET_INBOX_MESSAGES,
@@ -111,7 +112,7 @@ const AccountWidget: FC<Props> = ({
         payload: await Textile.listOutboxMessages(),
       })
     }, 0)
-    return () => clearInterval(interval)
+    return () => clearTimeout(interval)
   }, [privatekey])
 
   const handleDisconnect = () => {
