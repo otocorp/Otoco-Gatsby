@@ -15,8 +15,7 @@ import {
 import { IState } from '../../../state/types'
 import { IJurisdictionOption } from '../../../state/spinUp/types'
 
-import MainContract from '../../../smart-contracts/MainContract'
-import SeriesContract from '../../../smart-contracts/SeriesContract'
+import safeContract from '../../../smart-contracts/GnosisSafe'
 
 import SeriesDocuments from '../legal'
 import SeriesENS from '../ens'
@@ -113,6 +112,17 @@ const SeriesManagement: FC<Props> = ({
             newSeries.badges.push(Badges.FIRST)
           
           newSeries.access = company.owner == account.toLowerCase()
+          try {
+              const multisigOwners = await safeContract.getContract(newSeries.owner).methods
+              .getOwners()
+              .call({ from: account })
+              if (multisigOwners.find((o:string) => o == account)) {
+                newSeries.access = true
+                newSeries.badges.push(Badges.MANAGEMENT)
+              }
+          } catch (err) {
+            console.log('Entity owner is not a Multisig wallet.')
+          }
           try {
             const res = await Textile.sendRequest({
               method:'expiration',

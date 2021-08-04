@@ -7,7 +7,7 @@ import { IState } from '../../state/types'
 import './style.scss'
 import ERC20Contract from '../../smart-contracts/ERC20'
 import TransactionUtils from '../../services/transactionUtils'
-import { requestPaymentWyre, WyreEnv } from '../../services/wyre'
+import { requestPaymentWyre, WyreEnv, verifyPaymentWyre } from '../../services/wyre'
 import { PrivateKey } from '@textile/crypto'
 import { DecryptedMailbox, PaymentMessage, PaymentProps } from '../../state/account/types'
 import Textile from '../../services/textile'
@@ -54,13 +54,17 @@ const PaymentWidget: FC<Props> = ({
   // Recept informations
   const [receipt, setReceipt] = useState<PaymentProps | null>(null)
   const [error, setError] = useState<string>('')
+  const [receiptId, setReceiptId] = useState<string>('')
+  const [receiptFormVisible, setReceiptFormVisible] = useState<boolean>(false)
 
+ 
   React.useEffect(() => {
     if (show) {
       setStatus(StatusType.OPENED)
       setTimeout(() => {
         setCountdown(true)
       }, 200)
+      setReceiptFormVisible(false)
     } else {
       setStatus(StatusType.CLOSED)
       setCountdown(false)
@@ -232,6 +236,52 @@ const PaymentWidget: FC<Props> = ({
     closeModal()
   }
 
+  const handleClickReceiptForm = async () => {
+    setReceiptFormVisible(true)
+  }
+  const updateReceipt = async (event: React.FormEvent<HTMLInputElement>) => {
+    setReceiptId(event.target.value)
+  }
+  const handleClickUploadReceipt = async () => {
+    const receipt: PaymentProps = {
+      receipt: receiptId,
+      method: 'WYRE',
+      currency: 'USD',
+      timestamp: Date.now(),
+    }
+    setStatus(StatusType.PROCESSING)
+    try {
+      // Is a Hash
+      if (/^0x([A-Fa-f0-9]{64})$/.test(receiptId)) {
+        const web3:Web3 = window.web3
+        let currency = ''
+        let r = await web3.eth.getTransactionReceipt(receiptId);
+        if (!r.status)
+          throw "Transaction not exists or not confirmed.";
+        if (r.to != ERC20Contract.addressesUSDT[network]) {
+          receipt.method = 'DAI'
+          receipt.currency = 'DAI'
+        } else if (r.to != ERC20Contract.addressesDAI[network]) {
+          receipt.method = 'USDT'
+          receipt.currency = 'USDT'
+        }
+        else throw "Transaction made on wrong contract.";
+        receipt.timestamp = parseInt((await web3.eth.getBlock(r.blockNumber)).timestamp.toString()) * 1000
+      } else {
+        // Is NOT a hash
+        await verifyPaymentWyre(receiptId, network, amount)
+      }
+      // If passed
+      setReceipt(receipt)
+      setStatus(StatusType.SUCCESS)
+      await sendPaymentMessage(receipt)
+    }
+    catch(e) {
+      setError(e);
+      setStatus(StatusType.OPENED)
+    }
+  }
+
   return (
     <div>
       {status !== StatusType.CLOSED && (
@@ -255,7 +305,7 @@ const PaymentWidget: FC<Props> = ({
               >
                 &times;
               </div>
-              {status == StatusType.OPENED && (
+              {status == StatusType.OPENED && !receiptFormVisible &&(
                 <div>
                   <h3>Payment method</h3>
                   <div className="small">
@@ -289,9 +339,38 @@ const PaymentWidget: FC<Props> = ({
                     <span style={{ marginRight: '0.5em' }}>
                       <ExclamationCircle className="fix-icon-alignment" />
                     </span>
-                    Don't speed up this transaction, make sure your gas price is configured properly.
+                    In case you have already made this payment before, just <a href='' onClick={handleClickReceiptForm}>click here</a> and upload a receipt.
                   </p>
                   {error && <p className="small text-warning">{error}</p>}
+                </div>
+              )}
+              {status == StatusType.OPENED && receiptFormVisible &&(
+                <div>
+                  <h3>Upload Receipt</h3>
+                  <div className="small">
+                    Item: {product} -{' '}
+                    <span className="text-secondary">({billId})</span>
+                  </div>
+                  <div className="row justify-content-center mt-4" style={{minHeight:'172px'}}>
+                    <div className="col-12">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Paste a hash or a Payment id"
+                        aria-label="Text input"
+                        onChange={updateReceipt}
+                      />
+                    </div>
+                    <div className="col-6">
+                      <button
+                        className="btn btn-primary flex-fill"
+                        onClick={handleClickUploadReceipt}
+                      >Check and Upload</button>
+                    </div>
+                    <div className="col-6">
+                      {error && <p className="small text-warning">{error}</p>}
+                    </div>
+                  </div>
                 </div>
               )}
               {status == StatusType.PROCESSING && (

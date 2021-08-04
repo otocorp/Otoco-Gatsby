@@ -118,3 +118,29 @@ export const requestPaymentWyre = async (
     }
   })
 }
+
+const WyreAPI = {
+  main: "https://api.sendwyre.com/v3/orders/",
+  ropsten: "https://api.testwyre.com/v3/orders/"
+}
+
+export const verifyPaymentWyre = async (
+  id: string,
+  network: string,
+  amount: number
+) => {
+  const request = await axios.get(`${WyreAPI[network]}${id}`)
+    if (request.status == 204) throw 'Not found any transaction with this Receipt ID.'
+    const receipt = request.data
+    if (network == 'main' && receipt.dest != `account:${process.env.GATSBY_SENDWYRE_ID}`)
+        throw 'Error validating payment. Destination account is not the oracle.'
+    if (network == 'ropsten' && receipt.dest != `account:${process.env.GATSBY_TESTWYRE_ID}`)
+        throw 'Error validating payment. Destination account is not the oracle.'
+    if (receipt.destCurrency != 'USD')
+        throw 'Error validating payment. Not USD destination currency.'
+    if (receipt.purchaseAmount != amount)
+        throw 'Error validating payment. Payment amount not match with receipt.'
+    if (network == 'main' && receipt.status != 'SUCCESS')
+        throw 'Error validating payment. Payment not yet completed.'
+    return
+}
