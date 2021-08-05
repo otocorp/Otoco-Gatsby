@@ -20,22 +20,19 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
   const [link, setLink] = useState<string>('')
   const [description, setDescription] = useState<string>('')
   const [filter, setFilter] = useState<BroadcastFilter | null>(null)
-
-  React.useEffect(() => {
-    setTimeout(async () => {
-      if (!privatekey) setError('No Account Key-pair found.')
-      if (privatekey) setError(null)
-    }, 10)
-  }, [privatekey])
+  const [result, setResult] = useState<string>('')
 
   const handleReportRequest = async () => {
     if (!privatekey) return
     if (!process.env.GATSBY_ORACLE_KEY) return
 
-    await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
+    const res = await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
       method: 'report',
       message: {},
     })
+
+    if (res) setResult('Report message sent. ID:' + res?.id)
+    else setResult('Error sending report message.')
   }
 
   return (
@@ -43,7 +40,9 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
       <div className="row">
         <div className="col-12">
           <div className="col-12 card">
-            {!error && (
+          <h4>Report Message</h4>
+            <p className="small">Request oracle an accounts registered reports.</p>
+            {!result && (
               <button
                 className="btn btn-primary mb-2"
                 onClick={handleReportRequest}
@@ -51,7 +50,7 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
                 Request Report
               </button>
             )}
-            {error && <p>{error}</p>}
+            <p className="mb-2">{result}</p>
           </div>
         </div>
       </div>
