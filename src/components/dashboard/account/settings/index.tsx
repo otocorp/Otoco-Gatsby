@@ -13,13 +13,8 @@ import {
   AccountActionTypes,
   SET_ALIAS,
   DecryptedMailbox,
-  CachedAccount,
-  SET_PRIVATEKEY,
-  PaymentProps,
-  SET_INBOX_MESSAGES,
-  SET_OUTBOX_MESSAGES,
+  CachedAccount
 } from '../../../../state/account/types'
-import ReactJson from 'react-json-view'
 
 import '../../style.scss'
 import Account from '../index'
@@ -41,6 +36,7 @@ const SeriesIdentity: FC<Props> = ({
   dispatch,
 }: Props) => {
   const [hasEmail, setHasEmail] = useState<boolean>(false)
+  const [error, setError] = useState('')
   const [email, setEmail] = useState('')
   const [aliasTemp, setAlias] = useState<string | undefined>(undefined)
 
@@ -53,7 +49,7 @@ const SeriesIdentity: FC<Props> = ({
   }
   const handleUpdateEmail = async () => {
     if (!validateEmail(email) && email.length > 0) {
-      //setError('* please fill a valid e-mail.')
+      setError('* please fill a valid e-mail.')
       return
     }
     try {
@@ -78,9 +74,9 @@ const SeriesIdentity: FC<Props> = ({
   }
   const handleChangeAlias = async () => {
     if (!aliasTemp || !account) return
-    const cached:CachedAccount = Textile.fetchAccount(account)
+    const cached:CachedAccount = Textile.fetchAccountDetails(account)
     cached.alias = aliasTemp
-    Textile.storeAccount(account, cached)
+    Textile.storeAccountDetails(account, cached)
     dispatch({ type: SET_ALIAS, payload: aliasTemp })
   }
 
@@ -111,6 +107,7 @@ const SeriesIdentity: FC<Props> = ({
                 </div>
               </div>
             </div>
+            <div className="small text-warning">{error}</div>
           </div>
         )}
       </div>

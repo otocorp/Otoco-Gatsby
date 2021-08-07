@@ -1,5 +1,4 @@
 import React, { FC } from 'react'
-import ReactJson from 'react-json-view'
 import { DecryptedMailbox } from '../../../../state/account/types'
 import { BroadcastMessage } from './broadcastMessage'
 import { WalletMessage } from './walletMessage'
@@ -42,20 +41,6 @@ export const ListInboxMessages = ({
         </td>
       )}
       <td>
-        {m.body.method == 'other' && (
-          <ReactJson
-            src={m.body}
-            theme="monokai"
-            collapseStringsAfterLength={8}
-            displayDataTypes={false}
-            displayObjectSize={false}
-            collapsed={true}
-            enableClipboard={false}
-            style={{
-              background: 'transparent',
-            }}
-          />
-        )}
         {m.body.method == 'wallet' && (
           <WalletMessage message={m}></WalletMessage>
         )}

@@ -27,7 +27,7 @@ const Modal: ModalType = {
         walletconnect: {
           package: WalletConnectProvider, // required
           options: {
-            infuraId: 'f2e6a40391274a0793c63e923de0a170', // required
+            infuraId: process.env.GATSBY_INFURA_ID, // required
           },
         },
       }

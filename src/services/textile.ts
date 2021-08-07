@@ -4,7 +4,6 @@ import {
   Client,
   PrivateKey,
   PublicKey,
-  KeyInfo,
   UserMessage,
   UserAuth,
   Identity,
@@ -15,12 +14,6 @@ import {
   DecryptedMailbox,
   MessageRequest,
 } from '../state/account/types'
-
-const keyInfo: KeyInfo = {
-  key: process.env.GATSBY_TEXTILE_UNSAFE_KEY,
-  secret: process.env.GATSBY_TEXTILE_UNSAFE_SECRET,
-}
-const oraclePublicKey = process.env.GATSBY_ORACLE_KEY
 
 const messageDecoder = async (
   message: UserMessage,
@@ -115,9 +108,6 @@ const Textile: TextileInterface = {
     account: string
   ): Promise<PrivateKey | null> {
     const web3: Web3 = window.web3
-    // avoid sending the raw secret by hashing it first
-    const secretHashed = web3.utils.sha3(process.env.GATSBY_PASSWORD)
-    if (!secretHashed) return null
     const message = this.generateMessageForEntropy(account)
     const signedText = await web3.eth.personal.sign(message, account)
     const signatureHash = web3.utils.keccak256(signedText).replace('0x', '')
