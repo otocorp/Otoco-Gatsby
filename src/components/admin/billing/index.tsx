@@ -3,7 +3,7 @@ import React, { FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
 import Textile from '../../../services/textile'
-import { BillingMessage } from '../../../state/account/types'
+import { BillingProps } from '../../../state/account/types'
 
 interface Props {
   network?: string
@@ -36,11 +36,11 @@ const Billing: FC<Props> = ({ network, privatekey }: Props) => {
     setAmount(parseInt(event.target.value))
   }
 
-  const handleBroadcastMessage = async (val) => {
+  const handleBroadcastMessage = async () => {
     if (!privatekey) return
     if (!process.env.GATSBY_ORACLE_KEY) return
 
-    const message: BillingMessage = {
+    const message: BillingProps = {
       product,
       entity,
       environment,

@@ -10,14 +10,19 @@ export const ADD_INBOX_MESSAGES = 'ADD_INBOX_MESSAGES'
 export const SET_OUTBOX_MESSAGES = 'SET_OUTBOX_MESSAGES'
 export const ADD_OUTBOX_MESSAGES = 'ADD_OUTBOX_MESSAGES'
 
-export interface PaymentProps {
+export interface PaymentReceipt {
   receipt: string
   method: 'WYRE' | 'DAI' | 'USDT'
   currency: 'USD' | 'DAI' | 'USDT'
   timestamp: number
 }
 
-export interface BillingMessage {
+export interface ReportProps {
+  start?: number
+  end?: number
+}
+
+export interface BillingProps {
   _id?: string
   product: string // Service paid for
   entity: string // Company ETH Address
@@ -26,25 +31,7 @@ export interface BillingMessage {
   body?: unknown
 }
 
-export interface PaymentMessage {
-  _id: string // Receipt
-  product: string // Service paid for
-  entity: string // Company ETH Address
-  environment: 'main' | 'ropsten'
-  method: 'WYRE' | 'DAI' | 'USDT'
-  currency: 'USD' | 'DAI' | 'USDT'
-  amount: number
-  timestamp: number
-  status: 'PROCESSING' | 'FAILED' | 'SUCCESS'
-  body?: unknown
-}
-
-export interface BroadcastFilter {
-  jurisdiction?: string
-  address?: string
-}
-
-export interface BroadcastMessage {
+export interface BroadcastProps {
   title?: string
   message?: string
   link?: string
@@ -52,11 +39,24 @@ export interface BroadcastMessage {
   filter?: BroadcastFilter
 }
 
-export interface WalletMessage {
+export interface WalletProps {
   _id: string
   email: string
   keys: string[]
   signature: number
+}
+
+export interface PaymentProps {
+  _id: string // Receipt
+  product: string // Service paid for
+  entity: string // Company ETH Address
+  environment: string
+  method: 'WYRE' | 'DAI' | 'USDT'
+  currency: 'USD' | 'DAI' | 'USDT'
+  amount: number
+  timestamp: number
+  status: 'processing' | 'failed' | 'success'
+  body?: unknown
 }
 
 export interface CompanyInterface {
@@ -70,18 +70,24 @@ export interface CompanyInterface {
   creation: Date
 }
 
-export interface ReportMessage {
-  companies?: CompanyInterface[]
+export interface BroadcastFilter {
+  jurisdiction?: string
+  address?: string
 }
 
-export interface MessageSchema {
+export interface MessageResponseReport {
+  companies?: CompanyInterface[]
+  payments?: PaymentProps[]
+}
+
+export interface MessageRequest {
   method: string
   message:
-    | PaymentMessage
-    | WalletMessage
-    | BroadcastMessage
-    | ReportMessage
-    | BillingMessage
+    | PaymentProps
+    | WalletProps
+    | BroadcastProps
+    | ReportProps
+    | BillingProps
 }
 
 export interface DecryptedMailbox {
@@ -92,10 +98,8 @@ export interface DecryptedMailbox {
   readAt?: number
 }
 
-export interface CachedWallet {
+export interface CachedAccount {
   alias: string
-  password: boolean
-  key: string
 }
 
 interface Disconnect {

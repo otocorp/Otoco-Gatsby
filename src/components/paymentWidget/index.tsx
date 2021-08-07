@@ -1,5 +1,5 @@
 import React, { Dispatch, FC, useState } from 'react'
-import Web3, { TransactionReceipt } from 'web3'
+import Web3 from 'web3'
 import { connect } from 'react-redux'
 import { CSSTransition } from 'react-transition-group'
 import { SeriesType, ManagementActionTypes } from '../../state/management/types'
@@ -9,7 +9,7 @@ import ERC20Contract from '../../smart-contracts/ERC20'
 import TransactionUtils from '../../services/transactionUtils'
 import { requestPaymentWyre, WyreEnv, verifyPaymentWyre } from '../../services/wyre'
 import { PrivateKey } from '@textile/crypto'
-import { DecryptedMailbox, PaymentMessage, PaymentProps } from '../../state/account/types'
+import { PaymentProps, PaymentReceipt } from '../../state/account/types'
 import Textile from '../../services/textile'
 import OtocoIcon from '../icons'
 import { downloadReceipt } from '../../services/receipt'
@@ -33,7 +33,6 @@ interface Props {
   product: string
   amount: number
   closeModal: () => void
-  dispatch: Dispatch<ManagementActionTypes>
 }
 
 const PaymentWidget: FC<Props> = ({
@@ -47,12 +46,11 @@ const PaymentWidget: FC<Props> = ({
   product,
   amount,
   closeModal,
-  dispatch,
 }: Props) => {
   const [status, setStatus] = useState<StatusType>(StatusType.CLOSED)
   const [countdown, setCountdown] = useState<boolean>(false)
   // Recept informations
-  const [receipt, setReceipt] = useState<PaymentProps | null>(null)
+  const [receipt, setReceipt] = useState<PaymentReceipt | null>(null)
   const [error, setError] = useState<string>('')
   const [receiptId, setReceiptId] = useState<string>('')
   const [receiptFormVisible, setReceiptFormVisible] = useState<boolean>(false)
@@ -77,7 +75,7 @@ const PaymentWidget: FC<Props> = ({
     setStatus(StatusType.PROCESSING)
     try {
       const response = await requestPaymentWyre(env, amount)
-      const receipt: PaymentProps = {
+      const receipt: PaymentReceipt = {
         receipt: response.id,
         method: 'WYRE',
         currency: 'USD',
@@ -114,7 +112,7 @@ const PaymentWidget: FC<Props> = ({
       })
 
       // if (!r.status) throw 'Transaction Errored'
-      const receipt: PaymentProps = {
+      const receipt: PaymentReceipt = {
         receipt: hash,
         method: 'DAI',
         currency: 'DAI',
@@ -150,7 +148,7 @@ const PaymentWidget: FC<Props> = ({
           })
       })
       // if (!r.status) throw 'Transaction Errored'
-      const receipt: PaymentProps = {
+      const receipt: PaymentReceipt = {
         receipt: hash,
         method: 'USDT',
         currency: 'USDT',
@@ -158,7 +156,6 @@ const PaymentWidget: FC<Props> = ({
       }
       setReceipt(receipt)
       setStatus(StatusType.SUCCESS)
-      // TODO In case of error sending message, suggest to RESEND receipt.
       await sendPaymentMessage(receipt)
     } catch (err) {
       // In case of error sending confirmation message
@@ -178,12 +175,13 @@ const PaymentWidget: FC<Props> = ({
     setStatus(StatusType.CLOSED)
     closeModal()
   }
-  const sendPaymentMessage = async (receipt: PaymentProps) => {
+  const sendPaymentMessage = async (receipt: PaymentReceipt) => {
+    if (!network) throw 'Error sending payment. No network connected.'
     if (!privatekey) throw 'Error sending payment. No Private Key present.'
     if (!process.env.GATSBY_ORACLE_KEY)
       throw 'Error sending payment. No Oracle public key set.'
     if (!managing) throw 'Error sending payment. No receipt/company found.'
-    const message: PaymentMessage = {
+    const message: PaymentProps = {
       _id: receipt.receipt,
       method: receipt.method,
       currency: receipt.currency,
@@ -192,35 +190,37 @@ const PaymentWidget: FC<Props> = ({
       timestamp: receipt.timestamp,
       product,
       amount,
-      status: 'PROCESSING',
+      status: 'processing',
       body: { billRef: billId },
     }
     await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
       method: 'payment',
       message,
     })
-    try {
-      await Textile.readMessage(messageId)
-    } catch (err) {
+    try { await Textile.readMessage(messageId) } catch (err) {
       // This will fail in cases of DAPP generated Renewals
     }
   }
   const handleClickDownload = async () => {
+    if (!receipt) return setError('No Receipt to download found.')
+    if (!network) return setError('No network connected.')
+    if (!managing) return setError('No entity selected.')
+    if (!account) return setError('No account connected.')
     const object = {
-      _id: receipt?.receipt,
-      method: receipt?.method,
-      currency: receipt?.currency,
+      _id: receipt.receipt,
+      method: receipt.method,
+      currency: receipt.currency,
       entity: managing?.contract,
       environment: network,
       timestamp: receipt?.timestamp,
       product,
       amount,
-      status: 'PROCESSING',
+      status: 'processing',
       body: { billRef: billId },
     }
     await downloadReceipt(
-      new Date(receipt?.timestamp),
-      receipt?.receipt,
+      new Date(receipt.timestamp),
+      receipt.receipt,
       product,
       network,
       receipt?.currency,
@@ -239,11 +239,11 @@ const PaymentWidget: FC<Props> = ({
   const handleClickReceiptForm = async () => {
     setReceiptFormVisible(true)
   }
-  const updateReceipt = async (event: React.FormEvent<HTMLInputElement>) => {
+  const updateReceipt = async (event) => {
     setReceiptId(event.target.value)
   }
   const handleClickUploadReceipt = async () => {
-    const receipt: PaymentProps = {
+    const receipt: PaymentReceipt = {
       receipt: receiptId,
       method: 'WYRE',
       currency: 'USD',

@@ -5,9 +5,8 @@ import { IState } from '../../../state/types'
 import Textile from '../../../services/textile'
 import {
   BroadcastFilter,
-  BroadcastMessage,
-  MessageSchema,
-  PaymentMessage,
+  BroadcastProps,
+  PaymentProps,
 } from '../../../state/account/types'
 
 interface Props {
@@ -51,16 +50,14 @@ const Broadcast: FC<Props> = ({ privatekey }: Props) => {
     if (!privatekey) return
     if (!process.env.GATSBY_ORACLE_KEY) return
 
-    const message: BroadcastMessage = {
+    const message: BroadcastProps = {
       title,
       message: description,
       link,
       icon: '',
     }
 
-    if (filter) {
-      message.filter = filter
-    }
+    if (filter) message.filter = filter
 
     const res = await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
       method: 'broadcast',

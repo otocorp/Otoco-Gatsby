@@ -13,9 +13,9 @@ import {
   AccountActionTypes,
   SET_ALIAS,
   DecryptedMailbox,
-  CachedWallet,
+  CachedAccount,
   SET_PRIVATEKEY,
-  PaymentMessage,
+  PaymentProps,
   SET_INBOX_MESSAGES,
   SET_OUTBOX_MESSAGES,
 } from '../../../../state/account/types'
@@ -37,19 +37,12 @@ interface Props {
 
 const SeriesIdentity: FC<Props> = ({
   account,
-  network,
-  managing,
-  alias,
   privatekey,
-  inboxMessages,
-  outboxMessages,
   dispatch,
 }: Props) => {
   const [hasEmail, setHasEmail] = useState<boolean>(false)
   const [email, setEmail] = useState('')
   const [aliasTemp, setAlias] = useState<string | undefined>(undefined)
-  // const [messagesIn, setInMessages] = useState<DecryptedMailbox[]>([])
-  // const [messagesOut, setOutMessages] = useState<DecryptedMailbox[]>([])
 
   const validateEmail = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -74,14 +67,6 @@ const SeriesIdentity: FC<Props> = ({
         },
       })
       if (!account) return
-      const cachedString = localStorage.getItem(`did:eth:${account.substr(2)}`)
-      if (!cachedString) return null
-      const cached: CachedWallet = JSON.parse(cachedString)
-      cached.password = true
-      localStorage.setItem(
-        `did:eth:${account.substr(2)}`,
-        JSON.stringify(cached)
-      )
       setHasEmail(true)
     } catch (err) {
       // setError('Some error occurred creating mailbox.')
@@ -93,11 +78,9 @@ const SeriesIdentity: FC<Props> = ({
   }
   const handleChangeAlias = async () => {
     if (!aliasTemp || !account) return
-    const cachedString = localStorage.getItem(`did:eth:${account.substr(2)}`)
-    if (!cachedString) return null
-    const cached: CachedWallet = JSON.parse(cachedString)
+    const cached:CachedAccount = Textile.fetchAccount(account)
     cached.alias = aliasTemp
-    localStorage.removeItem(`did:eth:${account.substr(2)}`)
+    Textile.storeAccount(account, cached)
     dispatch({ type: SET_ALIAS, payload: aliasTemp })
   }
 

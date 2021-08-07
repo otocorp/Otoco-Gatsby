@@ -46,8 +46,8 @@ const Admin: FC<Props> = ({ account, privatekey, dispatch }: Props) => {
       {privatekey && (
         <div>
           <Broadcast></Broadcast>
-          <Report></Report>
           <Billing></Billing>
+          <Report></Report>
         </div>
       )}
       {!privatekey && (

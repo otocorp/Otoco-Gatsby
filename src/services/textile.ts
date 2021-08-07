@@ -9,13 +9,11 @@ import {
   UserAuth,
   Identity,
   MailboxEvent,
-  MailboxEventType,
 } from '@textile/hub'
-import aes256 from 'aes256'
 import {
-  CachedWallet,
+  CachedAccount,
   DecryptedMailbox,
-  MessageSchema,
+  MessageRequest,
 } from '../state/account/types'
 
 const keyInfo: KeyInfo = {
@@ -60,12 +58,10 @@ interface TextileInterface {
     address: string,
     publickey: string
   ) => Promise<string | null>
-  storeKeys: (address: string) => boolean
-  storePrivateKey: (address: string, secret: string) => Promise<PrivateKey>
-  fetchIdentity: (
-    address: string,
-    secret: string
-  ) => Promise<CachedWallet | null>
+  storeAccountDetails: (address: string, cached:CachedAccount) => void
+  fetchAccountDetails: (
+    address: string
+  ) => CachedAccount
   loginWithChallenge: (identity: Identity, account:string) => Promise<UserAuth>
   registerNewKey: (wallet: string, key: string, sig: string) => Promise<void>
   authorize: () => Promise<Client | null>
@@ -79,7 +75,7 @@ interface TextileInterface {
   listOutboxMessages: () => Promise<DecryptedMailbox[]>
   sendMessage: (
     to: string,
-    message: MessageSchema
+    message: MessageRequest
   ) => Promise<UserMessage | null>
   sendRequest: (body:any) => Promise<any>
   deleteMessage: (id: string) => Promise<void>
@@ -116,14 +112,14 @@ const Textile: TextileInterface = {
   },
 
   generateIdentity: async function (
-    address: string
+    account: string
   ): Promise<PrivateKey | null> {
     const web3: Web3 = window.web3
     // avoid sending the raw secret by hashing it first
     const secretHashed = web3.utils.sha3(process.env.GATSBY_PASSWORD)
     if (!secretHashed) return null
-    const message = this.generateMessageForEntropy(address)
-    const signedText = await web3.eth.personal.sign(message, address)
+    const message = this.generateMessageForEntropy(account)
+    const signedText = await web3.eth.personal.sign(message, account)
     const signatureHash = web3.utils.keccak256(signedText).replace('0x', '')
     // The following line converts the hash in hex to an array of 32 integers.
     const sigArray = signatureHash
@@ -134,7 +130,10 @@ const Textile: TextileInterface = {
         'Hash of signature is not the correct size! Something went wrong!'
       )
     }
-    this.account = address
+    // If have some old LocalStorage, remove it.
+    const cached = this.fetchAccountDetails(account)
+    this.storeAccountDetails(account, cached)
+    this.account = account
     this.privateKey = PrivateKey.fromRawEd25519Seed(Uint8Array.from(sigArray))
     // Your app can now use this identity for generating a user Mailbox, Threads, Buckets, etc
     return this.privateKey
@@ -155,35 +154,21 @@ const Textile: TextileInterface = {
     return null
   },
 
-  storeKeys: function (address: string): boolean {
-    if (!this.privateKey) return false
-    const encrypted = aes256.encrypt(
-      process.env.GATSBY_PASSWORD,
-      this.privateKey.toString()
-    )
-    localStorage.setItem(
-      `did:eth:${address.substr(2)}`,
-      JSON.stringify({
-        alias: '',
-        password: false,
-        key: encrypted,
-      })
-    )
-    return true
+  storeAccountDetails: function (account: string, cached:CachedAccount): void {
+    localStorage.setItem( `did:eth:${account.substr(2)}`, JSON.stringify(cached))
   },
 
-  fetchIdentity: async function (
-    address: string,
-    secret: string
-  ): Promise<CachedWallet | null> {
+  fetchAccountDetails: function (
+    account: string
+  ): CachedAccount {
     /** Restore any cached user identity first */
-    const cachedString = localStorage.getItem(`did:eth:${address.substr(2)}`)
-    if (!cachedString) return null
-    const cached: CachedWallet = JSON.parse(cachedString)
-    const decrypted = aes256.decrypt(secret, cached.key).toString('utf8')
-    this.privateKey = PrivateKey.fromString(decrypted)
-    cached.key = this.privateKey.toString()
-    return cached
+    const cachedString = localStorage.getItem(`did:eth:${account.substr(2)}`)
+    if (cachedString) {
+      const obj = JSON.parse(cachedString)
+      if (obj.key) delete obj.key
+      return obj
+    }
+    return {alias:''}
   },
 
   loginWithChallenge: async (identity: Identity, account:string): Promise<UserAuth> => {
@@ -396,7 +381,7 @@ const Textile: TextileInterface = {
     return messageList
   },
 
-  sendMessage: async function (to: string, message: MessageSchema) {
+  sendMessage: async function (to: string, message: MessageRequest) {
     await this.refreshAuthorization()
     if (!this.user) return null
     if (!this.privateKey) return null

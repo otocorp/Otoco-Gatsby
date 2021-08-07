@@ -27,7 +27,7 @@ interface Props {
   dispatch: Dispatch<AccountActionTypes | ManagementActionTypes>
 }
 
-const MailboxForm: FC<Props> = ({
+const AuthenticationForm: FC<Props> = ({
   account,
   privatekey,
   inboxMessages,
@@ -84,7 +84,6 @@ const MailboxForm: FC<Props> = ({
         if (!signature) throw 'Error: Signature not created'
         await Textile.registerNewKey(account, pk.public.toString(), signature)
       }
-      // Textile.storeKeys(account)
       dispatch({ type: SET_PRIVATEKEY, payload: pk })
     } catch (err) {
       setCreation(null)
@@ -195,4 +194,4 @@ export default connect((state: IState) => ({
   privatekey: state.account.privatekey,
   managing: state.management.managing,
   inboxMessages: state.account.inboxMessages,
-}))(MailboxForm)
+}))(AuthenticationForm)
