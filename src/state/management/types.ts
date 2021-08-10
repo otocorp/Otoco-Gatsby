@@ -26,6 +26,7 @@ export type SeriesType = {
   created: Date
   renewal?: Date
   owner: string
+  first: string
   closed: boolean
   badges: Badges[]
   access: boolean

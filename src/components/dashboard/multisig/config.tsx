@@ -291,12 +291,12 @@ const Config: FC<Props> = ({
             </button>
           </div>
           <div className="col-12 col-md-8">
-            <p className="mt-4">or attach an existing Gnosis-Safe multisig wallet to your company</p>
+            <p className="mt-4 small">or attach an existing Gnosis-Safe multisig wallet to your company</p>
             <div className="input-group mb-2">
               <input
                 type="text"
                 className="form-control right"
-                placeholder="e.g.: 0x000123123..."
+                placeholder="Paste your Gnosis-safe wallet address here"
                 aria-label="Text input with dropdown button"
                 onChange={handleExistingChanges}
               />

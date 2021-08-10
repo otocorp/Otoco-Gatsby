@@ -74,6 +74,7 @@ const SeriesManagement: FC<Props> = ({
           created: new Date(),
           name: '',
           owner: '',
+          first: '',
           badges: [],
           closed: false,
           access: false,
@@ -105,6 +106,7 @@ const SeriesManagement: FC<Props> = ({
             parseInt(company.creation.toString()) * 1000
           )
           newSeries.owner = company.owner
+          newSeries.first = company.creator
 
           if (company.owner == account.toLowerCase())
             newSeries.badges.push(Badges.MANAGEMENT)
@@ -130,7 +132,7 @@ const SeriesManagement: FC<Props> = ({
               environment: network,
               entity: id.toLowerCase()
             })
-            newSeries.renewal = new Date(res.expiration-5356800000)
+            newSeries.renewal = new Date(res.expiration)
             newSeries.access = newSeries.access && newSeries.renewal.getTime() > Date.now()
           } catch (err) {}
           dispatch({ type: SET_MANAGE_SERIES, payload: newSeries })

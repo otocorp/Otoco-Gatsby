@@ -46,7 +46,9 @@ const SeriesOverview: FC<Props> = ({
           </h3>
           { managing.owner != ZERO_ADDRESS &&
           <div className="mt-4">
-            <h4>Manager</h4> <Address address={managing.owner}></Address>
+            { managing.first != managing.owner && <h4>Manager</h4> }
+            { managing.first == managing.owner && <h4>First Member/Manager</h4> }
+            <Address address={managing.owner}></Address>
           </div>
           }
           <div className="row">

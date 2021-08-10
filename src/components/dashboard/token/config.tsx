@@ -241,7 +241,7 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
           </div>
         </div>
         <div className="row">
-          <p className="mt-4">or link an existing ERC20 token to your company</p>
+          <p className="mt-4 small">or link an existing ERC20 token to your company</p>
           <div className="col-12 col-md-8">
             <div className="input-group mb-2">
                 <input
