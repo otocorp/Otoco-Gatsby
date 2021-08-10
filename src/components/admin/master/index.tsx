@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
 import MainContract from '../../../smart-contracts/MainContract'
 import ERC20 from '../../../smart-contracts/ERC20'
+import TransactionMonitor from '../../transactionMonitor/transactionMonitor'
 
 import {
   SET_ACCOUNT,
@@ -28,6 +29,7 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
   const [amountTax, setAmount] = useState('')
   const [balanceDelaware, setBalanceDe] = useState('')
   const [balanceWyoming, setBalanceWy] = useState('')
+  const [transaction, setTransaction] = useState('')
 
   const getBNDecimals = (decimals) => {
     const BN = web3.utils.BN
@@ -71,8 +73,9 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
     try {
       MainContract.getContract(network, jurisdiction)
         .methods.changeTknAddr(tokenAddress)
-        .send({ from: account }, (error, hash) => {
-          if (error) alert(error.message)
+        .send({ from: account }, (error:Error, hash:string) => {
+          if (error) throw (error.message)
+          setTransaction(hash)
         })
     } catch (err) {
       alert(err)
@@ -85,8 +88,9 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
         .methods.changeSeriesFee(
           new BN(amountTax).mul(getBNDecimals(18)).toString()
         )
-        .send({ from: account }, (error, hash) => {
-          if (error) alert(error.message)
+        .send({ from: account }, (error:Error, hash:string) => {
+          if (error) throw (error.message)
+          setTransaction(hash)
         })
     } catch (err) {
       alert(err)
@@ -97,8 +101,9 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
     try {
       MainContract.getContract(network, jurisdiction)
         .methods.withdrawTkn()
-        .send({ from: account }, (error, hash) => {
-          if (error) alert(error.message)
+        .send({ from: account }, (error:Error, hash:string) => {
+          if (error) throw (error.message)
+          setTransaction(hash)
         })
     } catch (err) {
       alert(err)
@@ -113,9 +118,13 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
     setTokenAddress(event.target.value)
   }
 
+  const adminTransactionFinished = () => {
+    setTransaction('')
+  }
+
   return (
     <div>
-      {!error && (
+      {!error && !transaction && (
         <div className="row">
           <div className="col-12">
             <div className="col-12 card">
@@ -176,10 +185,10 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
           <div className="col-12">
             <div className="col-12 card">
               <h4>Withdraw Tokens</h4>
-              <h5>
+              <p className="small">
                 As Master contract owner, click on withdraw to transfer contract
                 tokens to your wallet.
-              </h5>
+              </p>
               <button
                 className="btn btn-primary mb-2"
                 onClick={sendWithdraw.bind(undefined, 'us_de')}
@@ -196,6 +205,11 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
           </div>
         </div>
       )}
+      {transaction && <TransactionMonitor
+        title="Admin Transaction"
+        hash={transaction}
+        callbackSuccess={adminTransactionFinished}
+      ></TransactionMonitor>}
       {error && <h3>{error}</h3>}
     </div>
   )

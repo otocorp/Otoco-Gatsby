@@ -1,5 +1,5 @@
 import React, { Dispatch, FC, useState } from 'react'
-import Web3, { TransactionReceipt } from 'web3'
+import Web3 from 'web3'
 import { connect } from 'react-redux'
 import { CSSTransition } from 'react-transition-group'
 import { SeriesType, ManagementActionTypes } from '../../state/management/types'
@@ -7,11 +7,13 @@ import { IState } from '../../state/types'
 import './style.scss'
 import ERC20Contract from '../../smart-contracts/ERC20'
 import TransactionUtils from '../../services/transactionUtils'
-import { requestPaymentWyre, WyreEnv } from '../../services/wyre'
+import { requestPaymentWyre, WyreEnv, verifyPaymentWyre } from '../../services/wyre'
 import { PrivateKey } from '@textile/crypto'
-import { PaymentMessage, PaymentProps } from '../../state/account/types'
+import { PaymentProps, PaymentReceipt } from '../../state/account/types'
 import Textile from '../../services/textile'
 import OtocoIcon from '../icons'
+import { downloadReceipt } from '../../services/receipt'
+import { ExclamationCircle } from 'react-bootstrap-icons'
 
 enum StatusType {
   CLOSED = 'closed',
@@ -31,7 +33,6 @@ interface Props {
   product: string
   amount: number
   closeModal: () => void
-  dispatch: Dispatch<ManagementActionTypes>
 }
 
 const PaymentWidget: FC<Props> = ({
@@ -45,20 +46,23 @@ const PaymentWidget: FC<Props> = ({
   product,
   amount,
   closeModal,
-  dispatch,
 }: Props) => {
   const [status, setStatus] = useState<StatusType>(StatusType.CLOSED)
   const [countdown, setCountdown] = useState<boolean>(false)
   // Recept informations
-  const [receipt, setReceipt] = useState<PaymentProps | null>(null)
+  const [receipt, setReceipt] = useState<PaymentReceipt | null>(null)
   const [error, setError] = useState<string>('')
+  const [receiptId, setReceiptId] = useState<string>('')
+  const [receiptFormVisible, setReceiptFormVisible] = useState<boolean>(false)
 
+ 
   React.useEffect(() => {
     if (show) {
       setStatus(StatusType.OPENED)
       setTimeout(() => {
         setCountdown(true)
       }, 200)
+      setReceiptFormVisible(false)
     } else {
       setStatus(StatusType.CLOSED)
       setCountdown(false)
@@ -71,7 +75,7 @@ const PaymentWidget: FC<Props> = ({
     setStatus(StatusType.PROCESSING)
     try {
       const response = await requestPaymentWyre(env, amount)
-      const receipt: PaymentProps = {
+      const receipt: PaymentReceipt = {
         receipt: response.id,
         method: 'WYRE',
         currency: 'USD',
@@ -108,7 +112,7 @@ const PaymentWidget: FC<Props> = ({
       })
 
       // if (!r.status) throw 'Transaction Errored'
-      const receipt: PaymentProps = {
+      const receipt: PaymentReceipt = {
         receipt: hash,
         method: 'DAI',
         currency: 'DAI',
@@ -144,7 +148,7 @@ const PaymentWidget: FC<Props> = ({
           })
       })
       // if (!r.status) throw 'Transaction Errored'
-      const receipt: PaymentProps = {
+      const receipt: PaymentReceipt = {
         receipt: hash,
         method: 'USDT',
         currency: 'USDT',
@@ -152,14 +156,12 @@ const PaymentWidget: FC<Props> = ({
       }
       setReceipt(receipt)
       setStatus(StatusType.SUCCESS)
-      // TODO In case of error sending message, suggest to RESEND receipt.
       await sendPaymentMessage(receipt)
     } catch (err) {
       // In case of error sending confirmation message
       if (status != StatusType.SUCCESS) {
         setStatus(StatusType.OPENED)
         setError('Payment failed or cancelled.')
-        console.log('PAYMENT CANCELLED', err)
       } else {
         setError(
           'Error sending receipt to oracle, wait some minutes and click Re-send message.'
@@ -173,12 +175,13 @@ const PaymentWidget: FC<Props> = ({
     setStatus(StatusType.CLOSED)
     closeModal()
   }
-  const sendPaymentMessage = async (receipt: PaymentProps) => {
+  const sendPaymentMessage = async (receipt: PaymentReceipt) => {
+    if (!network) throw 'Error sending payment. No network connected.'
     if (!privatekey) throw 'Error sending payment. No Private Key present.'
     if (!process.env.GATSBY_ORACLE_KEY)
       throw 'Error sending payment. No Oracle public key set.'
     if (!managing) throw 'Error sending payment. No receipt/company found.'
-    const message: PaymentMessage = {
+    const message: PaymentProps = {
       _id: receipt.receipt,
       method: receipt.method,
       currency: receipt.currency,
@@ -187,14 +190,96 @@ const PaymentWidget: FC<Props> = ({
       timestamp: receipt.timestamp,
       product,
       amount,
-      status: 'PROCESSING',
+      status: 'processing',
       body: { billRef: billId },
     }
     await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
       method: 'payment',
       message,
     })
-    await Textile.readMessage(messageId)
+    try { await Textile.readMessage(messageId) } catch (err) {
+      // This will fail in cases of DAPP generated Renewals
+    }
+  }
+  const handleClickDownload = async () => {
+    if (!receipt) return setError('No Receipt to download found.')
+    if (!network) return setError('No network connected.')
+    if (!managing) return setError('No entity selected.')
+    if (!account) return setError('No account connected.')
+    const object = {
+      _id: receipt.receipt,
+      method: receipt.method,
+      currency: receipt.currency,
+      entity: managing?.contract,
+      environment: network,
+      timestamp: receipt?.timestamp,
+      product,
+      amount,
+      status: 'processing',
+      body: { billRef: billId },
+    }
+    await downloadReceipt(
+      new Date(receipt.timestamp),
+      receipt.receipt,
+      product,
+      network,
+      receipt?.currency,
+      receipt?.method,
+      managing?.contract,
+      account,
+      amount,
+      object
+    )
+    setError('')
+    setReceipt(null)
+    setStatus(StatusType.CLOSED)
+    closeModal()
+  }
+
+  const handleClickReceiptForm = async () => {
+    setReceiptFormVisible(true)
+  }
+  const updateReceipt = async (event) => {
+    setReceiptId(event.target.value)
+  }
+  const handleClickUploadReceipt = async () => {
+    const receipt: PaymentReceipt = {
+      receipt: receiptId,
+      method: 'WYRE',
+      currency: 'USD',
+      timestamp: Date.now(),
+    }
+    setStatus(StatusType.PROCESSING)
+    try {
+      // Is a Hash
+      if (/^0x([A-Fa-f0-9]{64})$/.test(receiptId)) {
+        const web3:Web3 = window.web3
+        let currency = ''
+        let r = await web3.eth.getTransactionReceipt(receiptId);
+        if (!r.status)
+          throw "Transaction not exists or not confirmed.";
+        if (r.to != ERC20Contract.addressesUSDT[network]) {
+          receipt.method = 'DAI'
+          receipt.currency = 'DAI'
+        } else if (r.to != ERC20Contract.addressesDAI[network]) {
+          receipt.method = 'USDT'
+          receipt.currency = 'USDT'
+        }
+        else throw "Transaction made on wrong contract.";
+        receipt.timestamp = parseInt((await web3.eth.getBlock(r.blockNumber)).timestamp.toString()) * 1000
+      } else {
+        // Is NOT a hash
+        await verifyPaymentWyre(receiptId, network, amount)
+      }
+      // If passed
+      setReceipt(receipt)
+      setStatus(StatusType.SUCCESS)
+      await sendPaymentMessage(receipt)
+    }
+    catch(e) {
+      setError(e);
+      setStatus(StatusType.OPENED)
+    }
   }
 
   return (
@@ -220,14 +305,14 @@ const PaymentWidget: FC<Props> = ({
               >
                 &times;
               </div>
-              {status == StatusType.OPENED && (
+              {status == StatusType.OPENED && !receiptFormVisible &&(
                 <div>
                   <h3>Payment method</h3>
                   <div className="small">
                     Item: {product} -{' '}
                     <span className="text-secondary">({billId})</span>
                   </div>
-                  <div className="row justify-content-center">
+                  <div className="row justify-content-center mt-2">
                     <button
                       className="btn btn-primary modal-option"
                       onClick={handleWyrePayment}
@@ -250,11 +335,42 @@ const PaymentWidget: FC<Props> = ({
                       <div className="label">{amount} USDT</div>
                     </button>
                   </div>
-                  <p className="small">
-                    You will receive a message in your dashpanel once your
-                    payment is confirmed.
+                  <p className="small mt-2">
+                    <span style={{ marginRight: '0.5em' }}>
+                      <ExclamationCircle className="fix-icon-alignment" />
+                    </span>
+                    In case you have already made this payment before, just <a href='' onClick={handleClickReceiptForm}>click here</a> and upload a receipt.
                   </p>
                   {error && <p className="small text-warning">{error}</p>}
+                </div>
+              )}
+              {status == StatusType.OPENED && receiptFormVisible &&(
+                <div>
+                  <h3>Upload Receipt</h3>
+                  <div className="small">
+                    Item: {product} -{' '}
+                    <span className="text-secondary">({billId})</span>
+                  </div>
+                  <div className="row justify-content-center mt-4" style={{minHeight:'172px'}}>
+                    <div className="col-12">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Paste a hash or a Payment id"
+                        aria-label="Text input"
+                        onChange={updateReceipt}
+                      />
+                    </div>
+                    <div className="col-6">
+                      <button
+                        className="btn btn-primary flex-fill"
+                        onClick={handleClickUploadReceipt}
+                      >Check and Upload</button>
+                    </div>
+                    <div className="col-6">
+                      {error && <p className="small text-warning">{error}</p>}
+                    </div>
+                  </div>
                 </div>
               )}
               {status == StatusType.PROCESSING && (
@@ -282,34 +398,47 @@ const PaymentWidget: FC<Props> = ({
               {status == StatusType.SUCCESS && (
                 <div>
                   <h3>Payment Successfull</h3>
+                  <div className="px-4 py-4">
                   <div
-                    className="row  align-items-center justify-content-center small"
+                    className="row d-none d-md-flex align-items-center justify-content-center small"
                     style={{ minHeight: '230px' }}
                   >
-                    <div className="col-12">
-                      <b>Item:</b>
-                      <span className="text-primary">{product}</span>
-                    </div>
-                    <div className="col-12">
-                      <b>company: </b>
-                      <span className="text-primary">
-                        {managing?.name} ({managing?.jurisdiction})
+                    <div className="col-3 text-end"><b>Item:</b></div>
+                    <div className="col-9">{product}</div>
+                    <div className="col-3 text-end"><b>Entity:</b></div>
+                    <div className="col-9">{managing?.name} ({managing?.jurisdiction})</div>
+                    <div className="col-3 text-end"><b>Receipt:</b></div>
+                    <div className="col-9">{receipt?.receipt}</div>
+                    <div className="col-3 text-end"><b>Method:</b></div>
+                    <div className="col-9">{receipt?.method}</div>
+                    <div className="col-3 text-end"><b>Amount:</b></div>
+                    <div className="col-9">{amount} {receipt?.currency}</div>
+                  </div>
+                  <div
+                    className="row d-md-none align-items-center justify-content-center small"
+                    style={{ minHeight: '230px' }}
+                  >
+                    <h3 className="col-12 text-center">{product}</h3>
+                    <div className="col-12 text-center"><b>Receipt</b></div>
+                    <div className="col-12 text-center">{receipt?.receipt}</div>
+                    <div className="col-12 text-center"><b>Method</b></div>
+                    <div className="col-12 text-center">{receipt?.method}</div>
+                    <div className="col-12 text-center"><b>Amount:</b> {amount} {receipt?.currency}</div>
+                  </div>
+                  <div className="row">
+                    <p className="small mt-2">
+                      <span style={{ marginRight: '0.5em' }}>
+                        <ExclamationCircle className="fix-icon-alignment" />
                       </span>
-                    </div>
-                    <div className="col-12">
-                      <b>receipt: </b>
-                      <span className="text-primary">{receipt?.receipt}</span>
-                    </div>
-                    <div className="col-12">
-                      <b>method: </b>
-                      <span className="text-primary">{receipt?.method}</span>
-                    </div>
-                    <div className="col-12">
-                      <b>amount: </b>
-                      <span className="text-primary">{amount}</span>
-                    </div>
+                      Payments are not processed immediatelly, it could take some minutes to reflect changes.
+                    </p>
+                    <button
+                      className="btn btn-primary flex-fill"
+                      onClick={handleClickDownload}
+                    >Download and Close</button>
                   </div>
                   {error && <p className="small text-warning">{error}</p>}
+                </div>
                 </div>
               )}
             </div>

@@ -43,6 +43,8 @@ import {
 } from '../../state/management/ens/types'
 import { ExclamationTriangle } from 'react-bootstrap-icons'
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 interface Props {
   account?: string
   network?: string
@@ -102,34 +104,6 @@ const Overview: FC<Props> = ({ account, network, series, dispatch }: Props) => {
         return
       }
       setError(null)
-      // for (const j of jurisdictionOptions) {
-      //   const seriesAddresses = await MainContract.getContract(network, j.value)
-      //     .methods.mySeries()
-      //     .call({ from: account })
-
-      //   for (const s of seriesAddresses) {
-      //     const newSeries: SeriesType = {
-      //       jurisdiction: j.text,
-      //       contract: s,
-      //       created: new Date(),
-      //       name: '',
-      //       owner: '',
-      //     }
-      //     const events = await SeriesContract.getContract(
-      //       s
-      //     ).getPastEvents('allEvents', { fromBlock: 0, toBlock: 'latest' })
-      //     const timestamp = await web3.eth.getBlock(events[0].blockNumber)
-      //     newSeries.created = new Date(
-      //       parseInt(timestamp.timestamp.toString()) * 1000
-      //     )
-      //     newSeries.name = await SeriesContract.getContract(s)
-      //       .methods.getName()
-      //       .call({ from: account })
-      //     newSeries.owner = await SeriesContract.getContract(s)
-      //       .methods.owner()
-      //       .call({ from: account })
-      //     ownSeries.push(newSeries)
-      //   }
       let otocoNetwork = GraphNetwork.mainnet
       if (network == 'ropsten') otocoNetwork = GraphNetwork.ropsten
       const response: AxiosResponse = await requestSubgraph(
@@ -139,12 +113,14 @@ const Overview: FC<Props> = ({ account, network, series, dispatch }: Props) => {
           owned:companies(where:{owner:"${account}"}) {
             id
             name
+            owner
             jurisdiction
             creation
           }
           created:companies(where:{creator:"${account}"}) {
             id
             name
+            owner
             jurisdiction
             creation
           }
@@ -160,7 +136,9 @@ const Overview: FC<Props> = ({ account, network, series, dispatch }: Props) => {
             jurisdiction: company.jurisdiction,
             created: new Date(parseInt(company.creation.toString()) * 1000),
             badges: [],
+            closed: false
           }
+          if (company.owner == ZERO_ADDRESS) c.closed = true
           ownSeries[company.id] = c
         }
         ownSeries[company.id].badges.push(badge)
@@ -201,7 +179,7 @@ const Overview: FC<Props> = ({ account, network, series, dispatch }: Props) => {
         >
           <WelcomeForm></WelcomeForm>
         </CSSTransition>
-        {!account && <div className="card">No connected account.</div>}
+        {!account && <div className="card">Connect your wallet to get access.</div>}
         <h5>Entities</h5>
         <CSSTransition
           in={loading}

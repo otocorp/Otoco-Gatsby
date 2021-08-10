@@ -15,19 +15,20 @@ import {
 import { IState } from '../../../state/types'
 import { IJurisdictionOption } from '../../../state/spinUp/types'
 
-import MainContract from '../../../smart-contracts/MainContract'
-import SeriesContract from '../../../smart-contracts/SeriesContract'
+import safeContract from '../../../smart-contracts/GnosisSafe'
 
 import SeriesDocuments from '../legal'
 import SeriesENS from '../ens'
 import SeriesToken from '../token'
 import SeriesMultisig from '../multisig'
 import SeriesOverview from '../overview'
+import Manage from '../manage'
 import Plugins from '../plugins'
 import { Link } from 'gatsby'
 import { CSSTransition } from 'react-transition-group'
 import { GraphNetwork, requestSubgraph } from '../../../services/thegraph'
 import { AxiosResponse } from 'axios'
+import Textile from '../../../services/textile'
 
 interface Props {
   id: string
@@ -73,7 +74,10 @@ const SeriesManagement: FC<Props> = ({
           created: new Date(),
           name: '',
           owner: '',
+          first: '',
           badges: [],
+          closed: false,
+          access: false,
         }
         let otocoNetwork = GraphNetwork.mainnet
         try {
@@ -102,12 +106,35 @@ const SeriesManagement: FC<Props> = ({
             parseInt(company.creation.toString()) * 1000
           )
           newSeries.owner = company.owner
+          newSeries.first = company.creator
 
           if (company.owner == account.toLowerCase())
             newSeries.badges.push(Badges.MANAGEMENT)
           if (company.creator == account.toLowerCase())
             newSeries.badges.push(Badges.FIRST)
-
+          
+          newSeries.access = company.owner == account.toLowerCase()
+          try {
+              const multisigOwners = await safeContract.getContract(newSeries.owner).methods
+              .getOwners()
+              .call({ from: account })
+              if (multisigOwners.find((o:string) => o == account)) {
+                newSeries.access = true
+                newSeries.badges.push(Badges.MANAGEMENT)
+              }
+          } catch (err) {
+            console.log('Entity owner is not a Multisig wallet.')
+          }
+          try {
+            const res = await Textile.sendRequest({
+              method:'expiration',
+              wallet: account,
+              environment: network,
+              entity: id.toLowerCase()
+            })
+            newSeries.renewal = new Date(res.expiration)
+            newSeries.access = newSeries.access && newSeries.renewal.getTime() > Date.now()
+          } catch (err) {}
           dispatch({ type: SET_MANAGE_SERIES, payload: newSeries })
           setLoading(false)
         } catch (err) {
@@ -235,6 +262,18 @@ const SeriesManagement: FC<Props> = ({
         unmountOnExit
       >
         <Plugins></Plugins>
+      </CSSTransition>
+      <CSSTransition
+        in={section == ManageSection.MANAGE}
+        timeout={{
+          appear: 200,
+          enter: 200,
+          exit: 200,
+        }}
+        classNames="slide-up"
+        unmountOnExit
+      >
+        <Manage></Manage>
       </CSSTransition>
     </div>
   )

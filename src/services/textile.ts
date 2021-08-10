@@ -4,25 +4,16 @@ import {
   Client,
   PrivateKey,
   PublicKey,
-  KeyInfo,
   UserMessage,
   UserAuth,
   Identity,
   MailboxEvent,
-  MailboxEventType,
 } from '@textile/hub'
-import aes256 from 'aes256'
 import {
-  CachedWallet,
+  CachedAccount,
   DecryptedMailbox,
-  MessageSchema,
+  MessageRequest,
 } from '../state/account/types'
-
-const keyInfo: KeyInfo = {
-  key: process.env.GATSBY_TEXTILE_UNSAFE_KEY,
-  secret: process.env.GATSBY_TEXTILE_UNSAFE_SECRET,
-}
-const oraclePublicKey = process.env.GATSBY_ORACLE_KEY
 
 const messageDecoder = async (
   message: UserMessage,
@@ -46,14 +37,13 @@ const messageDecoder = async (
 interface TextileInterface {
   user: Users | null
   client: Client | null
+  account: string | null
   privateKey?: PrivateKey
   authorized: string | null
   lastAuthorization: number | null
   callbackInbox: (message: DecryptedMailbox) => void | null
   generateMessageForEntropy: (
     address: string,
-    application_name: string,
-    secret: string
   ) => string
   generateMessageForPublicKeyValidation: (publickey: string) => string
   generateIdentity: (address: string) => Promise<PrivateKey | null>
@@ -61,13 +51,11 @@ interface TextileInterface {
     address: string,
     publickey: string
   ) => Promise<string | null>
-  storeKeys: (address: string) => boolean
-  storePrivateKey: (address: string, secret: string) => Promise<PrivateKey>
-  fetchIdentity: (
-    address: string,
-    secret: string
-  ) => Promise<CachedWallet | null>
-  loginWithChallenge: (identity: Identity) => Promise<UserAuth>
+  storeAccountDetails: (address: string, cached:CachedAccount) => void
+  fetchAccountDetails: (
+    address: string
+  ) => CachedAccount
+  loginWithChallenge: (identity: Identity, account:string) => Promise<UserAuth>
   registerNewKey: (wallet: string, key: string, sig: string) => Promise<void>
   authorize: () => Promise<Client | null>
   watchInbox: (
@@ -80,8 +68,9 @@ interface TextileInterface {
   listOutboxMessages: () => Promise<DecryptedMailbox[]>
   sendMessage: (
     to: string,
-    message: MessageSchema
+    message: MessageRequest
   ) => Promise<UserMessage | null>
+  sendRequest: (body:any) => Promise<any>
   deleteMessage: (id: string) => Promise<void>
   readMessage: (id: string) => Promise<void>
 }
@@ -89,39 +78,20 @@ interface TextileInterface {
 const Textile: TextileInterface = {
   user: null,
   client: null,
+  account: null,
   privateKey: undefined,
   authorized: null, // Authorized Address
   lastAuthorization: null,
   callbackInbox: null,
 
   generateMessageForEntropy(
-    address: string,
-    application_name: string,
-    secret: string
+    account: string
   ): string {
     return (
-      'READ THIS MESSAGE CAREFULLY. ' +
-      'DO NOT SHARE THIS SIGNED MESSAGE WITH ANYONE OR THEY WILL HAVE READ AND WRITE' +
-      'ACCESS TO THIS APPLICATION. ' +
-      'DO NOT SIGN THIS MESSAGE IF THE FOLLOWING IS NOT TRUE OR YOU DO NOT CONSENT' +
-      'TO THE CURRENT APPLICATION HAVING ACCESS TO THE FOLLOWING APPLICATION. \n\n' +
-      'The Ethereum address used by this application is: \n' +
-      address +
-      '\n\n' +
-      'By signing this message, you authorize the current application to use the ' +
-      'following app associated with the above address: \n' +
-      '\n' +
-      application_name +
-      '\n\n' +
-      'The hash of your non-recoverable, private, non-persisted password or secret ' +
-      'phrase is: \n' +
-      '\n' +
-      secret +
-      '\n\n' +
-      'ONLY SIGN THIS MESSAGE IF YOU CONSENT TO THE CURRENT PAGE ACCESSING THE KEYS ' +
-      'ASSOCIATED WITH THE ABOVE ADDRESS AND APPLICATION. ' +
-      'AGAIN, DO NOT SHARE THIS SIGNED MESSAGE WITH ANYONE OR THEY WILL HAVE READ AND ' +
-      'WRITE ACCESS TO THIS APPLICATION. \n'
+      'PLEASE MAKE SURE THAT YOU ARE SIGNING THIS MESSAGE ON OTOCO.IO DOMAIN. \n' +
+      'This signature will be used to generate an entropy for a key-pair. \n' +
+      'Do not share this signed message with anyone or they will have read/write acess to this application. \n' +
+      'Your connected account: ' + account
     )
   },
 
@@ -135,18 +105,11 @@ const Textile: TextileInterface = {
   },
 
   generateIdentity: async function (
-    address: string
+    account: string
   ): Promise<PrivateKey | null> {
     const web3: Web3 = window.web3
-    // avoid sending the raw secret by hashing it first
-    const secretHashed = web3.utils.sha3(process.env.GATSBY_PASSWORD)
-    if (!secretHashed) return null
-    const message = this.generateMessageForEntropy(
-      address,
-      'otoco-dapp',
-      secretHashed
-    )
-    const signedText = await web3.eth.personal.sign(message, address)
+    const message = this.generateMessageForEntropy(account)
+    const signedText = await web3.eth.personal.sign(message, account)
     const signatureHash = web3.utils.keccak256(signedText).replace('0x', '')
     // The following line converts the hash in hex to an array of 32 integers.
     const sigArray = signatureHash
@@ -157,6 +120,10 @@ const Textile: TextileInterface = {
         'Hash of signature is not the correct size! Something went wrong!'
       )
     }
+    // If have some old LocalStorage, remove it.
+    const cached = this.fetchAccountDetails(account)
+    this.storeAccountDetails(account, cached)
+    this.account = account
     this.privateKey = PrivateKey.fromRawEd25519Seed(Uint8Array.from(sigArray))
     // Your app can now use this identity for generating a user Mailbox, Threads, Buckets, etc
     return this.privateKey
@@ -177,38 +144,24 @@ const Textile: TextileInterface = {
     return null
   },
 
-  storeKeys: function (address: string): boolean {
-    if (!this.privateKey) return false
-    const encrypted = aes256.encrypt(
-      process.env.GATSBY_PASSWORD,
-      this.privateKey.toString()
-    )
-    localStorage.setItem(
-      `did:eth:${address.substr(2)}`,
-      JSON.stringify({
-        alias: '',
-        password: false,
-        key: encrypted,
-      })
-    )
-    return true
+  storeAccountDetails: function (account: string, cached:CachedAccount): void {
+    localStorage.setItem( `did:eth:${account.substr(2)}`, JSON.stringify(cached))
   },
 
-  fetchIdentity: async function (
-    address: string,
-    secret: string
-  ): Promise<CachedWallet | null> {
+  fetchAccountDetails: function (
+    account: string
+  ): CachedAccount {
     /** Restore any cached user identity first */
-    const cachedString = localStorage.getItem(`did:eth:${address.substr(2)}`)
-    if (!cachedString) return null
-    const cached: CachedWallet = JSON.parse(cachedString)
-    const decrypted = aes256.decrypt(secret, cached.key).toString('utf8')
-    this.privateKey = PrivateKey.fromString(decrypted)
-    cached.key = this.privateKey.toString()
-    return cached
+    const cachedString = localStorage.getItem(`did:eth:${account.substr(2)}`)
+    if (cachedString) {
+      const obj = JSON.parse(cachedString)
+      if (obj.key) delete obj.key
+      return obj
+    }
+    return {alias:''}
   },
 
-  loginWithChallenge: async (identity: Identity): Promise<UserAuth> => {
+  loginWithChallenge: async (identity: Identity, account:string): Promise<UserAuth> => {
     return new Promise((resolve, reject) => {
       /**
        * Configured for our development server
@@ -230,6 +183,7 @@ const Textile: TextileInterface = {
         socket.send(
           JSON.stringify({
             pubkey: publicKey,
+            wallet: account,
             type: 'token',
           })
         )
@@ -299,9 +253,52 @@ const Textile: TextileInterface = {
     })
   },
 
+  sendRequest: async function(
+    body:any
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const socket = new WebSocket(process.env.GATSBY_ORACLE_URL)
+      var enc = new TextEncoder();
+      const bodyArray = enc.encode(JSON.stringify(body))
+
+      /* Wait for our socket to open successfully */
+      socket.onopen = () => {
+        if (this.privateKey) {
+          // Send an authenticated request
+          socket.send(
+            JSON.stringify({
+              type: 'request',
+              signer: this.privateKey.public,
+              signature: this.privateKey?.sign(bodyArray).toString(),
+              body
+            })
+          )
+        } else {
+          // Send an unautenticated request
+          socket.send(
+            JSON.stringify({
+              type: 'request',
+              body
+            })
+          )
+        }
+        /* Listen for messages from the server */
+        socket.onmessage = async (event) => {
+          const data = JSON.parse(event.data)
+          if (data.value.error) {
+            reject(data.value.message)
+            return
+          }
+          resolve(data.value)
+        }
+      }
+      socket.onerror = reject
+    })
+  },
+
   authorize: async function () {
     if (!this.privateKey) throw 'No private key found'
-    const auth: UserAuth = await this.loginWithChallenge(this.privateKey)
+    const auth: UserAuth = await this.loginWithChallenge(this.privateKey, this.account)
     this.user = await Users.withUserAuth(auth)
     this.client = await Client.withUserAuth(auth)
     await this.user.setupMailbox()
@@ -337,7 +334,7 @@ const Textile: TextileInterface = {
     const now = new Date()
     try {
     if (!this.lastAuthorization) return await this.authorize()
-    if (this.lastAuthorization + 120000 < now.getTime())
+    if (this.lastAuthorization + 60000 < now.getTime())
       return await this.authorize()
     } catch (err) {
       if (err == "No private key found") console.log('The accound has no Textile key registered.')
@@ -374,7 +371,7 @@ const Textile: TextileInterface = {
     return messageList
   },
 
-  sendMessage: async function (to: string, message: MessageSchema) {
+  sendMessage: async function (to: string, message: MessageRequest) {
     await this.refreshAuthorization()
     if (!this.user) return null
     if (!this.privateKey) return null

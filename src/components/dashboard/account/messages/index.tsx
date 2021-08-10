@@ -29,18 +29,6 @@ const SeriesIdentity: FC<Props> = ({
   outboxMessages,
   dispatch,
 }: Props) => {
-  React.useEffect(() => {
-    setTimeout(async () => {
-      dispatch({
-        type: SET_INBOX_MESSAGES,
-        payload: await Textile.listInboxMessages(),
-      })
-      dispatch({
-        type: SET_OUTBOX_MESSAGES,
-        payload: await Textile.listOutboxMessages(),
-      })
-    }, 0)
-  }, [privatekey])
 
   const handleDelete = async (id: string) => {
     if (!privatekey) return

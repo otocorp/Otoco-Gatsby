@@ -13,13 +13,8 @@ import {
   AccountActionTypes,
   SET_ALIAS,
   DecryptedMailbox,
-  CachedWallet,
-  SET_PRIVATEKEY,
-  PaymentMessage,
-  SET_INBOX_MESSAGES,
-  SET_OUTBOX_MESSAGES,
+  CachedAccount
 } from '../../../../state/account/types'
-import ReactJson from 'react-json-view'
 
 import '../../style.scss'
 import Account from '../index'
@@ -35,74 +30,15 @@ interface Props {
   dispatch: Dispatch<ManagementActionTypes | AccountActionTypes>
 }
 
-interface ListMessagesProps {
-  messages: DecryptedMailbox[]
-  handleDelete: (id: string) => Promise<void>
-}
-
-const ListMessages = ({ messages, handleDelete }: ListMessagesProps) => {
-  return messages.map((m) => (
-    <tr key={m.id}>
-      {/* <td>{m.from.substring(0, 5)} ...</td> */}
-      <td>
-        {m.from.substring(0, 5)}...
-        {m.from.substring(m.from.length - 5, m.from.length)}
-      </td>
-      <td>
-        <ReactJson
-          src={m.body}
-          theme="monokai"
-          collapseStringsAfterLength={8}
-          displayDataTypes={false}
-          displayObjectSize={false}
-          collapsed={true}
-          enableClipboard={false}
-          style={{
-            background: 'transparent',
-          }}
-        />
-      </td>
-      <td className="d-none d-md-block">
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={handleDelete.bind(undefined, m.id)}
-        >
-          erase
-        </button>
-      </td>
-    </tr>
-  ))
-}
-
 const SeriesIdentity: FC<Props> = ({
   account,
-  network,
-  managing,
-  alias,
   privatekey,
-  inboxMessages,
-  outboxMessages,
   dispatch,
 }: Props) => {
-  const [loading, setLoading] = useState<boolean>(false)
   const [hasEmail, setHasEmail] = useState<boolean>(false)
+  const [error, setError] = useState('')
   const [email, setEmail] = useState('')
   const [aliasTemp, setAlias] = useState<string | undefined>(undefined)
-  // const [messagesIn, setInMessages] = useState<DecryptedMailbox[]>([])
-  // const [messagesOut, setOutMessages] = useState<DecryptedMailbox[]>([])
-
-  React.useEffect(() => {
-    setTimeout(async () => {
-      dispatch({
-        type: SET_INBOX_MESSAGES,
-        payload: await Textile.listInboxMessages(),
-      })
-      dispatch({
-        type: SET_OUTBOX_MESSAGES,
-        payload: await Textile.listOutboxMessages(),
-      })
-    }, 0)
-  }, [account])
 
   const validateEmail = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -113,7 +49,7 @@ const SeriesIdentity: FC<Props> = ({
   }
   const handleUpdateEmail = async () => {
     if (!validateEmail(email) && email.length > 0) {
-      //setError('* please fill a valid e-mail.')
+      setError('* please fill a valid e-mail.')
       return
     }
     try {
@@ -127,14 +63,6 @@ const SeriesIdentity: FC<Props> = ({
         },
       })
       if (!account) return
-      const cachedString = localStorage.getItem(`did:eth:${account.substr(2)}`)
-      if (!cachedString) return null
-      const cached: CachedWallet = JSON.parse(cachedString)
-      cached.password = true
-      localStorage.setItem(
-        `did:eth:${account.substr(2)}`,
-        JSON.stringify(cached)
-      )
       setHasEmail(true)
     } catch (err) {
       // setError('Some error occurred creating mailbox.')
@@ -146,11 +74,9 @@ const SeriesIdentity: FC<Props> = ({
   }
   const handleChangeAlias = async () => {
     if (!aliasTemp || !account) return
-    const cachedString = localStorage.getItem(`did:eth:${account.substr(2)}`)
-    if (!cachedString) return null
-    const cached: CachedWallet = JSON.parse(cachedString)
+    const cached:CachedAccount = Textile.fetchAccountDetails(account)
     cached.alias = aliasTemp
-    localStorage.setItem(`did:eth:${account.substr(2)}`, JSON.stringify(cached))
+    Textile.storeAccountDetails(account, cached)
     dispatch({ type: SET_ALIAS, payload: aliasTemp })
   }
 
@@ -181,6 +107,7 @@ const SeriesIdentity: FC<Props> = ({
                 </div>
               </div>
             </div>
+            <div className="small text-warning">{error}</div>
           </div>
         )}
       </div>

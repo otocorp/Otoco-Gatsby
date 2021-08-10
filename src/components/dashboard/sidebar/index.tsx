@@ -12,7 +12,7 @@ import {
   SeriesType,
   Badges,
 } from '../../../state/management/types'
-import { ChevronLeft, Inboxes } from 'react-bootstrap-icons'
+import { ChevronLeft, Inboxes, Gear, Wallet2 } from 'react-bootstrap-icons'
 import OtocoIcon from '../../icons'
 import EntityCard from './entityCard'
 import { Link } from 'gatsby'
@@ -53,7 +53,7 @@ const SidebarSeries: FC<Props> = ({
               />
             </div>
           )}
-          {managing && managing?.badges.length > 0 && (
+          {managing && managing.access && (
             <div>
               <Link className="d-block d-md-none col-12 btn" to={`/dashpanel/`}>
                 <ChevronLeft className="fix-icon-alignment" />
@@ -92,8 +92,8 @@ const SidebarSeries: FC<Props> = ({
                   ManageSection.MULTISIG
                 )}
               >
-                <OtocoIcon icon="keys" className="me-3 mb-1" />
-                Multisig
+                <Wallet2 className="me-3 mb-1" />
+                Asset Wallet
               </a>
               <a
                 className="col-12 btn"
@@ -111,6 +111,16 @@ const SidebarSeries: FC<Props> = ({
               >
                 <Inboxes className="me-3 mb-1" />
                 Billing
+              </a>
+              <a
+                className="col-12 btn"
+                onClick={handleChangeSection.bind(
+                  undefined,
+                  ManageSection.MANAGE
+                )}
+              >
+                <Gear className="me-3 mb-1" />
+                Manage
               </a>
             </div>
           )}

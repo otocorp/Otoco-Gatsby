@@ -1,14 +1,20 @@
 import React, { Dispatch, FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { PDFDocument, StandardFonts } from 'pdf-lib'
+import TransactionUtils from '../../../services/transactionUtils'
+import TransactionMonitor from '../../transactionMonitor/transactionMonitor'
 import {
+  CLEAR_MANAGE_SERIES,
   SeriesType,
   ManagementActionTypes,
 } from '../../../state/management/types'
-import { FileEarmarkText } from 'react-bootstrap-icons'
+import SeriesContract from '../../../smart-contracts/SeriesContract'
+import { DistributeVertical, FileEarmarkText } from 'react-bootstrap-icons'
 import { IState } from '../../../state/types'
 
 interface Props {
+  account?: string | null
+  network?: string | null
   managing?: SeriesType
   dispatch: Dispatch<ManagementActionTypes>
 }
@@ -25,27 +31,30 @@ const pdfs = {
   },
 }
 
-const SeriesDocuments: FC<Props> = ({ managing, dispatch }: Props) => {
-  const toUnicode = (str: string) => {
-    return str
-      .split('')
-      .map(function (value) {
-        const temp = value.charCodeAt(0).toString(16).toUpperCase()
-        if (temp.length > 2) {
-          return '\\u' + temp
-        }
-        return value
-      })
-      .join('')
-  }
+const toUnicode = (str: string) => {
+  return str
+    .split('')
+    .map(function (value) {
+      const temp = value.charCodeAt(0).toString(16).toUpperCase()
+      if (temp.length > 2) {
+        return '\\u' + temp
+      }
+      return value
+    })
+    .join('')
+}
 
-  const removeSpecial = (str: string) => {
-    return toUnicode(str)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-  }
+const removeSpecial = (str: string) => {
+  return toUnicode(str)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
 
-  function saveByteArray(reportName:string, byte:Uint8Array) {
+const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
+  const [closeFormOpened, setCloseFormOpened] = useState<boolean>(false)
+  const [transaction, setTransaction] = useState<string>('')
+
+  const saveByteArray = (reportName:string, byte:Uint8Array) => {
     const blob = new Blob([byte], { type: 'application/pdf' })
     const link = document.createElement('a')
     link.href = window.URL.createObjectURL(blob)
@@ -105,7 +114,6 @@ const SeriesDocuments: FC<Props> = ({ managing, dispatch }: Props) => {
         <div className="small">Download files related to your company:</div>
         <div className="mt-2">
           <a href="#" className="card-link" onClick={exportPDF}>
-            {/* <Icon icon={faDownload}></Icon> */}
             <FileEarmarkText className="fix-icon-alignment" />
             <span style={{ marginLeft: '0.5em' }}>
               Series Operating Agreement

@@ -5,9 +5,8 @@ import { IState } from '../../../state/types'
 import Textile from '../../../services/textile'
 import {
   BroadcastFilter,
-  BroadcastMessage,
-  MessageSchema,
-  PaymentMessage,
+  BroadcastProps,
+  PaymentProps,
 } from '../../../state/account/types'
 
 interface Props {
@@ -20,6 +19,7 @@ const Broadcast: FC<Props> = ({ privatekey }: Props) => {
   const [link, setLink] = useState<string>('')
   const [description, setDescription] = useState<string>('')
   const [filter, setFilter] = useState<BroadcastFilter | null>(null)
+  const [result, setResult] = useState<string>('')
 
   React.useEffect(() => {
     setTimeout(async () => {
@@ -50,21 +50,22 @@ const Broadcast: FC<Props> = ({ privatekey }: Props) => {
     if (!privatekey) return
     if (!process.env.GATSBY_ORACLE_KEY) return
 
-    const message: BroadcastMessage = {
+    const message: BroadcastProps = {
       title,
       message: description,
       link,
       icon: '',
     }
 
-    if (filter) {
-      message.filter = filter
-    }
+    if (filter) message.filter = filter
 
-    await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
+    const res = await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
       method: 'broadcast',
       message,
     })
+
+    if (res) setResult('Broadcast message sent. ID:' + res?.id)
+    else setResult('Error sending broadcast message.')
   }
 
   return (
@@ -72,6 +73,8 @@ const Broadcast: FC<Props> = ({ privatekey }: Props) => {
       <div className="row">
         <div className="col-12">
           <div className="col-12 card">
+            <h4>Broadcast Message</h4>
+            <p className="small">Broadcast a message to all managers, some jurisdiction or a specific address.</p>
             <div className="input-group mb-4">
               <input
                 type="text"
@@ -165,6 +168,7 @@ const Broadcast: FC<Props> = ({ privatekey }: Props) => {
             >
               Broadcast Message
             </button>
+            <p className="mb-2">{result}</p>
           </div>
         </div>
       </div>

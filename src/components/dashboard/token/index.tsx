@@ -4,7 +4,6 @@ import BN from 'bn.js'
 import { connect } from 'react-redux'
 import Config from './config'
 import Shares from './shares'
-import FactoryContract from '../../../smart-contracts/TokenFactory'
 import MasterRegistry from '../../../smart-contracts/MasterRegistry'
 import TokenContract from '../../../smart-contracts/OtocoToken'
 import { SeriesType } from '../../../state/management/types'
@@ -72,7 +71,7 @@ const SeriesToken: FC<Props> = ({
       // Get Token creation
       const events = await TokenContract.getContract(
         contract
-      ).getPastEvents('Initialized', { fromBlock: 0, toBlock: 'latest' })
+      ).getPastEvents('allEvents', { fromBlock: 0, toBlock: 'latest' })
       const timestamp = await web3.eth.getBlock(events[0].blockNumber)
       const creation = new Date(parseInt(timestamp.timestamp.toString()) * 1000)
       dispatch({

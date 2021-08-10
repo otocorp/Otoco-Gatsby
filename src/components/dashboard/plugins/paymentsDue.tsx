@@ -11,12 +11,10 @@ interface ListMessagesProps {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const PaymentsDue = ({
-  contract,
   messages,
   handlePay: handle,
 }: ListMessagesProps) => {
   const tempMessages = messages
-    .filter((m) => m.body.method === 'billing')
     .map((m) => {
       return {
         messageId: m.id,
@@ -29,15 +27,14 @@ export const PaymentsDue = ({
         currency: m.body.message.currency,
       }
     })
-    .filter((m) => m.entity === contract)
 
   return tempMessages.map((m) => (
     <tr className="small" key={m.billId}>
       <td>
         {m.product} <span className="text-secondary">({m.billId})</span>
       </td>
-      <td className="text-end">{m.amount} USD</td>
-      <td className="text-end">
+      <td className="d-none d-md-table-cell text-end">{m.amount} USD</td>
+      <td className="d-none d-md-table-cell text-end">
         <button
           className="btn btn-primary btn-sm"
           onClick={handle.bind(
@@ -49,6 +46,20 @@ export const PaymentsDue = ({
           )}
         >
           Pay
+        </button>
+      </td>
+      <td className="d-md-none text-end">
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={handle.bind(
+            undefined,
+            m.product,
+            m.messageId,
+            m.billId,
+            m.amount
+          )}
+        >
+          Pay {m.amount} USD
         </button>
       </td>
     </tr>

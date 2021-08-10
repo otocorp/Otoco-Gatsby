@@ -3,6 +3,7 @@ import BN from 'bn.js'
 import { navigate } from '@reach/router'
 import { connect } from 'react-redux'
 import UTCDate from '../../utcDate/utcDate'
+import accounting from 'accounting'
 import TransactionUtils from '../../../services/transactionUtils'
 import AddressWidget from '../../addressWidget/addressWidget'
 import TokenContract from '../../../smart-contracts/OtocoToken'
@@ -23,11 +24,11 @@ interface ListOwnerProps {
 
 const ListOwners = ({ owners, totalShares }: ListOwnerProps) => {
   return owners.map((m, idx) => (
-    <tr key={idx}>
+    <tr className="small" key={idx}>
       <td>
         <AddressWidget address={m.address}></AddressWidget>
       </td>
-      <td>{m.balance}</td>
+      <td>{accounting.formatMoney(m.balance, { symbol: '' })}</td>
       <td className="d-none d-md-block">
         <div>{(m.balance / totalShares) * 100}%</div>
         {/* <div className="progress">
@@ -143,61 +144,64 @@ const Shares: FC<Props> = ({
   }
 
   return (
-    <div>
-      <p>
-        A total of{' '}
-        <b>
-          {numberWithCommas(tokenConfig?.shares)} {tokenConfig?.name}
-        </b>{' '}
-        with symbol <b>{tokenConfig?.symbol}</b> were minted on{' '}
-        <UTCDate separator="at" date={tokenDeployed?.creation}></UTCDate>.
-      </p>
-      {!advanced && (
+    <div className="row">
+      <div className="col-12 col-md-10 col-lg-8">
+        <p className="small">
+          A total of{' '}
+          <b>
+            {numberWithCommas(tokenConfig?.shares)} {tokenConfig?.name}
+          </b>{' '}
+          with symbol <b>{tokenConfig?.symbol}</b> were minted on{' '}
+          <UTCDate separator="at" date={tokenDeployed?.creation}></UTCDate>.
+        </p>
+        {!advanced && (
+          <p className="mt-2">
+            Click{' '}
+            <a href="" onClick={toggleAdvanced}>
+              here
+            </a>{' '}
+            to see advanced options.
+          </p>
+        )}
+        {advanced && (
+          <p>
+            If you had some problem deploying your token is possible to{' '}
+            <a href="" className="text-danger" onClick={clickDetachToken}>
+              Detach Token
+            </a>
+            , then deploy a new one.
+          </p>
+        )}
         <p className="mt-2">
-          Click{' '}
-          <a href="" onClick={toggleAdvanced}>
-            here
-          </a>{' '}
-          to see advanced options.
+          {tokenConfig?.symbol} token contract address:&nbsp;&nbsp;
+          <AddressWidget address={tokenDeployed?.contract}></AddressWidget>
         </p>
-      )}
-      {advanced && (
-        <p>
-          If you had some problem deploying your token is possible to{' '}
-          <a href="" className="text-danger" onClick={clickDetachToken}>
-            Detach Token
-          </a>
-          , then deploy a new one.
-        </p>
-      )}
-      <p className="mt-2">
-        {tokenConfig?.symbol} token contract address:&nbsp;&nbsp;
-        <AddressWidget address={tokenDeployed?.contract}></AddressWidget>
-      </p>
-      <div className="small">List of current holders:</div>
-      <table className="table table-hover mb-5">
-        <thead>
-          <tr>
-            <th scope="col">Wallet</th>
-            <th scope="col">Balance</th>
-            <th scope="col" className="d-none d-md-block">
-              Tokens
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <ListOwners
-            owners={owners}
-            totalShares={tokenConfig?.shares}
-          ></ListOwners>
-        </tbody>
-      </table>
-      <Link
-        className="btn btn-primary"
-        to={`/token/${tokenDeployed?.contract}`}
-      >
-        Transfer Tokens
-      </Link>
+        <div className="small">List of current holders:</div>
+        <table className="table table-hover mb-4">
+          <thead>
+            <tr>
+              <th scope="col">Wallet</th>
+              <th scope="col">Balance</th>
+              <th scope="col" className="d-none d-md-block">
+                Tokens
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ListOwners
+              owners={owners}
+              totalShares={tokenConfig?.shares}
+            ></ListOwners>
+          </tbody>
+        </table>
+        <Link
+          className="btn btn-primary col-12 col-md-4"
+          to={`/token/${tokenDeployed?.contract}`}
+          style={{float:"right"}}
+        >
+          Transfer Tokens
+        </Link>
+      </div>
     </div>
   )
 }

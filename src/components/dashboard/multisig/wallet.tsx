@@ -2,6 +2,7 @@ import React, { Dispatch, FC, useState } from 'react'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import Web3 from 'web3'
 import BN from 'bn.js'
+import accounting from 'accounting'
 import { connect } from 'react-redux'
 import AddressWidget from '../../addressWidget/addressWidget'
 import OtocoToken from '../../../smart-contracts/OtocoToken'
@@ -15,6 +16,7 @@ import {
   MultisigActionTypes,
 } from '../../../state/management/multisig/types'
 import { IState } from '../../../state/types'
+import { ExclamationCircle } from 'react-bootstrap-icons'
 
 type TokenListTransaction = {
   status: number
@@ -52,7 +54,7 @@ const ListBalances = ({ balances }: MultisigBalances) => {
         <div>{b.symbol}</div>
       </td>
       <td>
-        <div>{b.amount}</div>
+        <div>{accounting.formatMoney(b.amount, { symbol: '' })}</div>
       </td>
     </tr>
   ))
@@ -158,6 +160,7 @@ const Wallet: FC<Props> = ({
         Number of signatures needed to approve transactions:{' '}
         {multisigConfig?.threshold}
       </div>
+      <div className="col-12 col-md-8">
       <table className="table small">
         <thead>
           <tr>
@@ -184,22 +187,26 @@ const Wallet: FC<Props> = ({
       {!multisigBalances && (
         <div className="d-flex justify-content-center">
           <div className="row">
-            <div className="col-12 text-center">Loading Balances</div>
-            <div className="col-12 text-center">
+            <div className="col-12 col-md-8 text-center">Loading Balances</div>
+            <div className="col-12 col-md-8 text-center">
               <div className="spinner-border" role="status"></div>
             </div>
           </div>
         </div>
       )}
-      <div className="d-flex">
+      </div>
+      <div className="col-12 col-md-8">
         <div className="row">
-          <div className="col-12 col-md-4">
-            <button className="btn btn-primary" onClick={clickManageHandler}>
+          <div className="col-12 col-lg-8 py-2 text-white-50 small text-end">
+            <span style={{ marginRight: '0.5em' }}>
+              <ExclamationCircle className="fix-icon-alignment" />
+            </span>
+            To manage your multisig you will be redirected to Gnosis-Safe App.
+          </div>
+          <div className="col-12 col-lg-4">
+            <button className="btn btn-primary col-12" onClick={clickManageHandler}>
               Manage Wallet
             </button>
-          </div>
-          <div className="col-12 col-md-8 py-2 text-warning small">
-            To manage your multisig you will be redirected to Gnosis-Safe App.
           </div>
         </div>
       </div>

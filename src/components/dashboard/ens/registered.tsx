@@ -178,39 +178,41 @@ const Registered: FC<Props> = ({
     //   You successfully claimed <AddressWidget address={managing?.contract} /> as
     //   the name for your company address {managing.contract}.
     // </div>
-    <div>
-      <div className="small pb-2">You sucessfully claimed a domain.</div>
-      {!transaction && (
-        <table className="table small">
-          <thead>
-            <tr>
-              <th scope="col">Domain</th>
-              <th scope="col">Address</th>
-              <th scope="col" className="d-none d-md-block">
-                Operations
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <ListDomains
-              domains={domainsList}
-              handleTransfer={handleClickTransfer}
-              handleSetReverse={handleClickSetReverse}
-            ></ListDomains>
-          </tbody>
-        </table>
-      )}
-      {transaction && (
-        <TransactionMonitor
-          hash={transaction}
-          title="Transfering Subdomain"
-          callbackSuccess={updateDomains}
-        ></TransactionMonitor>
-      )}
-      <div className="small">
-        If your domain is addressing your series contract, it is possible to
-        transfer to your multisig address, using <b>transfer to multisig</b>{' '}
-        above.
+    <div className="row">
+      <div className="col-12 col-md-8">
+        <div className="small pb-2">You sucessfully claimed a domain.</div>
+        {!transaction && (
+          <table className="table small">
+            <thead>
+              <tr>
+                <th scope="col">Domain</th>
+                <th scope="col">Address</th>
+                <th scope="col" className="d-none d-md-block">
+                  Operations
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ListDomains
+                domains={domainsList}
+                handleTransfer={handleClickTransfer}
+                handleSetReverse={handleClickSetReverse}
+              ></ListDomains>
+            </tbody>
+          </table>
+        )}
+        {transaction && (
+          <TransactionMonitor
+            hash={transaction}
+            title="Transfering Subdomain"
+            callbackSuccess={updateDomains}
+          ></TransactionMonitor>
+        )}
+        <div className="small">
+          If your domain is addressing your series contract, it is possible to
+          transfer to your multisig address, using <b>transfer to multisig</b>{' '}
+          above.
+        </div>
       </div>
     </div>
   )

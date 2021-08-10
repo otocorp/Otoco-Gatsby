@@ -3,7 +3,7 @@ import React, { FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
 import Textile from '../../../services/textile'
-import { BillingMessage } from '../../../state/account/types'
+import { BillingProps } from '../../../state/account/types'
 
 interface Props {
   network?: string
@@ -17,6 +17,7 @@ const Billing: FC<Props> = ({ network, privatekey }: Props) => {
   const [entity, setEntity] = useState<string>('')
   const [environment, setEnvironment] = useState<'main' | 'ropsten'>('main')
   const [amount, setAmount] = useState<number>(0)
+  const [result, setResult] = useState<string>('')
 
   React.useEffect(() => {
     setTimeout(async () => {
@@ -35,21 +36,24 @@ const Billing: FC<Props> = ({ network, privatekey }: Props) => {
     setAmount(parseInt(event.target.value))
   }
 
-  const handleBroadcastMessage = async (val) => {
+  const handleBroadcastMessage = async () => {
     if (!privatekey) return
     if (!process.env.GATSBY_ORACLE_KEY) return
 
-    const message: BillingMessage = {
+    const message: BillingProps = {
       product,
       entity,
       environment,
       amount,
     }
 
-    await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
+    const res = await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
       method: 'billing',
       message,
     })
+
+    if (res) setResult('Billing message sent. ID:' + res?.id)
+    else setResult('Error sending billing message.')
   }
 
   return (
@@ -57,6 +61,8 @@ const Billing: FC<Props> = ({ network, privatekey }: Props) => {
       <div className="row">
         <div className="col-12">
           <div className="col-12 card">
+            <h4>Billing Message</h4>
+            <p className="small">Create billing to an addressed entity. The message will be sent to company manager.</p>
             <div className="input-group mb-4">
               <input
                 type="text"
@@ -96,6 +102,7 @@ const Billing: FC<Props> = ({ network, privatekey }: Props) => {
             >
               Send Billing
             </button>
+            <p className="mb-2">{result}</p>
           </div>
         </div>
       </div>

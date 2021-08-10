@@ -67,7 +67,10 @@
   }
 }
 
-// .squared {
-//   width: 60vh;
-//   height: 60vh;
-// }
+.multisig-owner-card {
+  display: block;
+  width: 100%;
+  border: 1px solid $accent-purple-40;
+  padding: 8px;
+  border-radius: 8px;
+}

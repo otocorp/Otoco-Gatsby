@@ -20,6 +20,7 @@ import {
 } from '../../../state/account/types'
 
 import '../style.scss'
+import { CSSTransition } from 'react-transition-group'
 
 interface Props {
   account?: string
@@ -41,12 +42,17 @@ const Account: FC<Props> = ({
   children,
   tab,
 }: Props) => {
+  const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
 
   React.useEffect(() => {
     setTimeout(async () => {
       try {
-        if (!privatekey) return
+        setLoading(true)
+        if (!privatekey) {
+          setLoading(false)
+          return
+        }
         setError('')
         dispatch({
           type: SET_INBOX_MESSAGES,
@@ -56,9 +62,11 @@ const Account: FC<Props> = ({
           type: SET_OUTBOX_MESSAGES,
           payload: await Textile.listOutboxMessages(),
         })
+        setLoading(false)
       } catch (err) {
         console.error(err)
         setError('An error ocurred acessing messaging service.')
+        setLoading(false)
       }
     }, 0)
   }, [account, privatekey])
@@ -73,7 +81,16 @@ const Account: FC<Props> = ({
         <span style={{ paddingLeft: '10px' }}>Back</span>
       </Link>
       {account && !privatekey && <NotificationForm></NotificationForm>}
-      {!error && account && privatekey && (
+      <CSSTransition
+        in={account != null && privatekey != null && !error && !loading}
+        timeout={{
+          appear: 200,
+          enter: 200,
+          exit: 200,
+        }}
+        classNames="slide-up"
+        unmountOnExit
+      >
         <div>
           <div className="card">
             <div className="card-body">
@@ -101,7 +118,7 @@ const Account: FC<Props> = ({
             </div>
           </div>
         </div>
-      )}
+      </CSSTransition>
       {!account && (
         <div className="d-flex justify-content-center">
           <div className="row">
@@ -115,6 +132,16 @@ const Account: FC<Props> = ({
             <div className="col-12 text-center text-warning">{error}</div>
             <div className="col-12 text-center">Try again in some minutes.</div>
           </div>
+        </div>
+      )}
+      {loading && (
+         <div className="d-flex justify-content-center">
+         <div className="row">
+           <div className="col-12 text-center">Loading Data</div>
+           <div className="col-12 text-center">
+             <div className="spinner-border" role="status"></div>
+           </div>
+         </div>
         </div>
       )}
     </div>

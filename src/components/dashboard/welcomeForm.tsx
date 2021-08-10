@@ -27,7 +27,7 @@ interface Props {
   dispatch: Dispatch<AccountActionTypes | ManagementActionTypes>
 }
 
-const MailboxForm: FC<Props> = ({
+const AuthenticationForm: FC<Props> = ({
   account,
   privatekey,
   inboxMessages,
@@ -64,20 +64,26 @@ const MailboxForm: FC<Props> = ({
       })
       await setWaitTimer()
       const pk = await Textile.generateIdentity(account)
-      if (!pk) throw 'Error: Private Key not created.'
-      setCreation({
-        step: 2,
-        message:
-          'Now we need you to sign a second message to prove the link between the public key and your connected wallet.',
+      if (!pk) throw 'Error authenticating wallet.'
+      const alreadyAssigned = await Textile.sendRequest({
+        method:'key',
+        wallet: account,
+        key: pk.public.toString()
       })
-      await setWaitTimer()
-      const signature = await Textile.generatePublicKeyValidation(
-        account,
-        pk.public.toString()
-      )
-      if (!signature) throw 'Error: Signature not created'
-      await Textile.registerNewKey(account, pk.public.toString(), signature)
-      Textile.storeKeys(account)
+      if (!alreadyAssigned) {
+        setCreation({
+          step: 2,
+          message:
+            'Now we need you to sign a second message to prove the link between the public key and your connected wallet. This will required just once.',
+        })
+        await setWaitTimer()
+        const signature = await Textile.generatePublicKeyValidation(
+          account,
+          pk.public.toString()
+        )
+        if (!signature) throw 'Error: Signature not created'
+        await Textile.registerNewKey(account, pk.public.toString(), signature)
+      }
       dispatch({ type: SET_PRIVATEKEY, payload: pk })
     } catch (err) {
       setCreation(null)
@@ -87,7 +93,7 @@ const MailboxForm: FC<Props> = ({
 
   return (
     <div className="card welcome">
-      <div className="ui celled contact-form animate-slide">
+      <div className="contact-form animate-slide">
         {!loading && privatekey == undefined && (
           <div className="row">
             {!creation && (
@@ -104,7 +110,7 @@ const MailboxForm: FC<Props> = ({
                     className="btn btn-primary"
                     onClick={handleClickCreate}
                   >
-                    Activate
+                    Authenticate
                   </button>
                 </p>
               </div>
@@ -118,7 +124,7 @@ const MailboxForm: FC<Props> = ({
                     className="btn btn-primary disabled"
                     onClick={handleClickCreate}
                   >
-                    Activate
+                    Authenticating...
                   </button>
                 </p>
               </div>
@@ -134,7 +140,7 @@ const MailboxForm: FC<Props> = ({
               <div className="col-8">
                 {inboxMessages.length == 0 && (
                   <div>
-                    <h4>Encrypted messaging and file storage activated!</h4>
+                    <h4>Account and keys authenticated!</h4>
                     <p className="small">No new messages.</p>
                     <Link
                       className="btn btn-primary-outline btn-sm"
@@ -146,7 +152,7 @@ const MailboxForm: FC<Props> = ({
                 )}
                 {inboxMessages.length > 0 && (
                   <div>
-                    <h4>Encrypted messaging and file storage activated!</h4>
+                    <h4>Account and keys authenticated!</h4>
                     <p className="small">
                       You have {inboxMessages.length} new messages.
                     </p>
@@ -188,4 +194,4 @@ export default connect((state: IState) => ({
   privatekey: state.account.privatekey,
   managing: state.management.managing,
   inboxMessages: state.account.inboxMessages,
-}))(MailboxForm)
+}))(AuthenticationForm)

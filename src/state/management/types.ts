@@ -10,11 +10,13 @@ export enum ManageSection {
   ENS = 'ens',
   MULTISIG = 'multisig',
   PLUGINS = 'plugins',
+  MANAGE = 'manage',
 }
 
 export enum Badges {
   FIRST = 'First Member',
   MANAGEMENT = 'Manager',
+  CLOSED = 'Closed',
 }
 
 export type SeriesType = {
@@ -22,8 +24,12 @@ export type SeriesType = {
   name: string
   jurisdiction: string
   created: Date
+  renewal?: Date
   owner: string
+  first: string
+  closed: boolean
   badges: Badges[]
+  access: boolean
 }
 
 interface SetOwnSeries {

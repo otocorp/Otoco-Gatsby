@@ -17,12 +17,14 @@ import { PaymentsMade } from './paymentsMade'
 import { PaymentsDue } from './paymentsDue'
 import { PrivateKey } from '@textile/crypto'
 import WelcomeForm from '../welcomeForm'
+import manage from '../manage'
+import account from '../account'
 
 interface Props {
+  account?: string
+  network?: string
   managing?: SeriesType
   privatekey?: PrivateKey
-  inboxMessages: DecryptedMailbox[]
-  outboxMessages: DecryptedMailbox[]
   dispatch: Dispatch<AccountActionTypes | ManagementActionTypes>
 }
 
@@ -34,35 +36,63 @@ interface ModalProps {
 }
 
 const SeriesOverview: FC<Props> = ({
+  account,
+  network,
   managing,
   privatekey,
-  inboxMessages,
-  outboxMessages,
   dispatch,
 }: Props) => {
+  const [inbox, setInbox] = useState<DecryptedMailbox[]>([])
+  const [outbox, setOutbox] = useState<DecryptedMailbox[]>([])
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [modalInfo, setModalInfo] = useState<ModalProps | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
+
+  const insertRenewalDue = (inbox:DecryptedMailbox[], out:DecryptedMailbox[]) => {
+    const billRef = "Renewal/" + managing.renewal.getFullYear()
+    const payment = out.find((m) => m.body.message.body.billRef == billRef)
+    if ( !payment && managing?.renewal && managing?.renewal.getTime() < Date.now() ) {
+      inbox.push({
+        from: process.env.GATSBY_ORACLE_KEY,
+        body: {
+          method: "billing",
+          message: {
+            amount: 39,
+            entity: managing?.contract,
+            environment: network,
+            product: "Renewal",
+            _id: billRef
+          }
+        }
+      })
+    }
+  }
 
   React.useEffect(() => {
     setTimeout(async () => {
-      if (!privatekey) return
+      if (!privatekey) return // Ignore in case of non privateKey present
+      if (modalOpen) return   // Ignore in case of opening modal, refresh when closes
+      setLoading(true)
       setError('')
       try {
-        dispatch({
-          type: SET_INBOX_MESSAGES,
-          payload: await Textile.listInboxMessages(),
-        })
-        dispatch({
-          type: SET_OUTBOX_MESSAGES,
-          payload: await Textile.listOutboxMessages(),
-        })
+        const outbox = (await Textile.listOutboxMessages())
+          .filter((m) => m.body.method === 'payment' )
+          .filter((m) => m.body.message.entity === managing?.contract)
+        setOutbox(outbox)
+        const inbox = (await Textile.listInboxMessages())
+          .filter((m) => m.body.method === 'billing')
+          .filter((m) => m.body.message.entity === managing?.contract)
+        insertRenewalDue(inbox, outbox)
+        setInbox(inbox)
+        setLoading(false)
       } catch (err) {
         console.error(err)
         setError('An error ocurred acessing payment service.')
+        setLoading(false)
       }
     }, 0)
-  }, [managing, privatekey])
+  }, [managing, privatekey, modalOpen])
 
   const closeModal = () => {
     setModalInfo(null)
@@ -89,43 +119,30 @@ const SeriesOverview: FC<Props> = ({
       <div className="d-grid gap-1 mb-5">
         <h3 className="m-0">Billing</h3>
         <div className="small">
-          Here you can pay for the maintenance of your entities and see what
-          else you paid for.
+        Here you can pay for the maintenance and other add-ons for your entities and keep track of what you paid for.<br/>
+        All billing actions require authentication with your connected account.
         </div>
         {!privatekey && (
-          <div className="d-flex justify-content-center">
-            <div className="row">
+          <div className="row">
+            <div className="col-12 col-md-8">
               <WelcomeForm></WelcomeForm>
             </div>
           </div>
         )}
         {error && (
-          <div className="d-flex justify-content-center">
             <div className="row">
               <div className="col-12 text-center text-warning">{error}</div>
               <div className="col-12 text-center">
                 Try again in some minutes.
               </div>
             </div>
-          </div>
         )}
         {!error && privatekey && (
           <div>
             <div>
-              {/* <div className="py-4">
-              <button
-                className="btn btn-primary plugin-option"
-                onClick={handleSelectPlugin.bind(undefined, 'Annual Dues', 39)}
-              >
-                <div className="label">Annual Dues</div>
-                <FileMedical size={48}></FileMedical>
-                <div className="label">39 USD</div>
-              </button>
-              {modalOpen}
-            </div> */}
               <table className="table">
                 <thead>
-                  <tr>
+                  <tr className="d-none d-md-table-row">
                     <th scope="col">Item</th>
                     <th scope="col" className="text-end">
                       Amount
@@ -134,13 +151,29 @@ const SeriesOverview: FC<Props> = ({
                       Action
                     </th>
                   </tr>
+                  <tr className="d-md-none">
+                    <th scope="col">Item</th>
+                    <th scope="col"></th>
+                  </tr>
                 </thead>
                 <tbody>
+                  { !loading &&
                   <PaymentsDue
                     contract={managing?.contract}
-                    messages={inboxMessages}
+                    messages={inbox}
                     handlePay={handleSelectPlugin}
                   ></PaymentsDue>
+                  }
+                  { loading &&
+                    <tr>
+                      <td colSpan={4}>
+                        <div className="col-12 text-center">Loading</div>
+                        <div className="col-12 text-center">
+                          <div className="spinner-border" role="status"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
               <PaymentWidget
@@ -153,12 +186,9 @@ const SeriesOverview: FC<Props> = ({
               ></PaymentWidget>
             </div>
             <h3 className="m-0">Payments made</h3>
-            <div className="small">
-              Easy place to check the payments you have made using plugins
-            </div>
             <table className="table">
               <thead>
-                <tr>
+                <tr className="d-none d-md-table-row">
                   <th scope="col">Item</th>
                   <th scope="col">ID/Hash</th>
                   <th scope="col" className="text-end">
@@ -168,12 +198,31 @@ const SeriesOverview: FC<Props> = ({
                     Amount
                   </th>
                 </tr>
+                <tr className="d-md-none">
+                  <th scope="col">Item</th>
+                  <th scope="col" className="text-end">
+                    Action
+                  </th>
+                </tr>
               </thead>
               <tbody>
-                <PaymentsMade
-                  contract={managing?.contract}
-                  messages={outboxMessages}
-                ></PaymentsMade>
+                { !loading &&
+                  <PaymentsMade
+                    contract={managing?.contract}
+                    messages={outbox}
+                    wallet={account}
+                  ></PaymentsMade>
+                }
+                { loading &&
+                  <tr>
+                    <td colSpan={4}>
+                      <div className="col-12 text-center">Loading</div>
+                      <div className="col-12 text-center">
+                        <div className="spinner-border" role="status"></div>
+                      </div>
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -184,8 +233,8 @@ const SeriesOverview: FC<Props> = ({
 }
 
 export default connect((state: IState) => ({
+  account: state.account.account,
+  network: state.account.network,
   managing: state.management.managing,
   privatekey: state.account.privatekey,
-  inboxMessages: state.account.inboxMessages,
-  outboxMessages: state.account.outboxMessages,
 }))(SeriesOverview)

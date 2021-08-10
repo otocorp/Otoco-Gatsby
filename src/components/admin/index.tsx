@@ -5,6 +5,7 @@ import Broadcast from './broadcast'
 import Report from './report'
 import Billing from './billing'
 
+import WelcomeForm from '../dashboard/welcomeForm'
 import Web3Integrate from '../../services/web3-integrate'
 import Web3 from 'web3'
 import {
@@ -13,14 +14,15 @@ import {
   SET_NETWORK,
 } from '../../state/account/types'
 import { IState } from '../../state/types'
+import { PrivateKey } from '@textile/hub'
 
 interface Props {
   account?: string
+  privatekey?: PrivateKey
   dispatch: Dispatch<AccountActionTypes>
 }
 
-const Admin: FC<Props> = ({ account, dispatch }: Props) => {
-  const [error, setError] = useState<string | null>(null)
+const Admin: FC<Props> = ({ account, privatekey, dispatch }: Props) => {
 
   React.useEffect(() => {
     setTimeout(async () => {
@@ -41,13 +43,21 @@ const Admin: FC<Props> = ({ account, dispatch }: Props) => {
   return (
     <div>
       <Master></Master>
-      <Broadcast></Broadcast>
-      <Report></Report>
-      <Billing></Billing>
+      {privatekey && (
+        <div>
+          <Broadcast></Broadcast>
+          <Billing></Billing>
+          <Report></Report>
+        </div>
+      )}
+      {!privatekey && (
+        <WelcomeForm></WelcomeForm>
+      )}
     </div>
   )
 }
 
 export default connect((state: IState) => ({
   account: state.account.account,
+  privatekey: state.account.privatekey,
 }))(Admin)

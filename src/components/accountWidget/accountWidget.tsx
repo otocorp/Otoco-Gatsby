@@ -78,29 +78,8 @@ const AccountWidget: FC<Props> = ({
   }, [account, show])
 
   React.useEffect(() => {
-    setTimeout(async () => {
-      if (!account) return
-      const cached = await Textile.fetchIdentity(
-        account,
-        process.env.GATSBY_PASSWORD
-      )
-      if (cached) {
-        if (cached.alias.length > 0)
-          dispatch({ type: SET_ALIAS, payload: cached.alias })
-        dispatch({
-          type: SET_PRIVATEKEY,
-          payload: PrivateKey.fromString(cached.key),
-        })
-        // Textile.setCallbackInbox(callbackInboxNewMessage)
-      } else {
-        dispatch({ type: SET_PRIVATEKEY, payload: null })
-        dispatch({ type: SET_ALIAS, payload: null })
-      }
-    }, 0)
-  }, [account])
-
-  React.useEffect(() => {
-    const interval = setInterval(async () => {
+    if (!privatekey) return
+    const interval = setTimeout(async () => {
       dispatch({
         type: SET_INBOX_MESSAGES,
         payload: await Textile.listInboxMessages(),
@@ -109,8 +88,8 @@ const AccountWidget: FC<Props> = ({
         type: SET_OUTBOX_MESSAGES,
         payload: await Textile.listOutboxMessages(),
       })
-    }, 120000)
-    return () => clearInterval(interval)
+    }, 0)
+    return () => clearTimeout(interval)
   }, [privatekey])
 
   const handleDisconnect = () => {
