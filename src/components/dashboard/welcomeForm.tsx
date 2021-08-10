@@ -93,7 +93,7 @@ const AuthenticationForm: FC<Props> = ({
 
   return (
     <div className="card welcome">
-      <div className="ui celled contact-form animate-slide">
+      <div className="contact-form animate-slide">
         {!loading && privatekey == undefined && (
           <div className="row">
             {!creation && (

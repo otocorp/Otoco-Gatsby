@@ -59,7 +59,7 @@ const SeriesOverview: FC<Props> = ({
                 <span style={{ marginRight: '0.5em' }}>
                   <ExclamationCircle className="fix-icon-alignment" />
                 </span>
-                Your entity smart contract is not a wallet. Go to Multisig to create
+                Your entity smart contract is not a wallet. Go to Asset Wallet to create
                 a digital wallet for your company.
               </div>
             }
@@ -75,7 +75,7 @@ const SeriesOverview: FC<Props> = ({
                 }
                 { managing.renewal.getTime() < Date.now() && 
                   <div className="card">
-                    <div className="text-small">Please, access <a href="" onClick={handleChangeSection.bind(
+                    <div className="text-small">Please access <a href="" onClick={handleChangeSection.bind(
                           undefined,
                           ManageSection.PLUGINS
                         )}>Billing</a> to renew your entity. Expiration date <b><UTCDate date={managing.renewal} separator=""></UTCDate></b>.

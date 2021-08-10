@@ -181,10 +181,11 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
       </div>
       <div className="small pb-2">
         You decide what the tokens represent: equity in your company, a usage
-        right, a convertible, etc. Simply set you token parameters and click{' '}
-        <b>Deploy Token</b> to create the new contract.
+        right, a convertible, etc. <br/>
+        Simply set you token parameters and click <b>Deploy Token</b> to create the new contract.
       </div>
       {!transaction && (
+        <div>
         <div className="row">
           <div className="col-12 col-md-8">
             <div className="input-group mb-2">
@@ -231,18 +232,22 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
             </div>
           </div>
           <div className="w-100"></div>
-          <div className="col-12 col-md-8">
-            <button className="btn btn-primary" onClick={handleClickDeploy}>
+        </div>
+        <div className="row">
+          <div className="col-12 col-md-8 mt-4"> 
+            <button className="col-12 col-md-4 btn btn-primary" onClick={handleClickDeploy} style={{float:'right'}}>
               Deploy Token
             </button>
           </div>
-          <p className="mt-4">Or link an existing token ERC20</p>
-          <div className="row col-12 col-md-10 col-lg-8">
+        </div>
+        <div className="row">
+          <p className="mt-4">or link an existing ERC20 token to your company</p>
+          <div className="col-12 col-md-8">
             <div className="input-group mb-2">
                 <input
                   type="text"
                   className="form-control right"
-                  placeholder="e.g.: 0x000123123..."
+                  placeholder="Paste your ERC20 token contract address here"
                   aria-label="Text input with dropdown button"
                   onChange={handleExistingChanges}
                 />
@@ -252,6 +257,7 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
               </div>
             </div>
           </div>
+        </div>
       )}
       {transaction && (
         <TransactionMonitor

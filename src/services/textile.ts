@@ -88,10 +88,10 @@ const Textile: TextileInterface = {
     account: string
   ): string {
     return (
-      'PLEASE MAKE SURE THAT YOU ARE SIGNING THIS MESSAGE OTOCO.IO DOMAIN. \n' +
+      'PLEASE MAKE SURE THAT YOU ARE SIGNING THIS MESSAGE ON OTOCO.IO DOMAIN. \n' +
       'This signature will be used to generate an entropy for a key-pair. \n' +
       'Do not share this signed message with anyone or they will have read/write acess to this application. \n' +
-      'Your current account: ' + account
+      'Your connected account: ' + account
     )
   },
 

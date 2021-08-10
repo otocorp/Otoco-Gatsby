@@ -75,23 +75,26 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
     <div className="row">
       <div className="d-grid gap-1 mb-5">
         <h3 className="mt-2">Manage Entity</h3>
-        <div className="small">Take critical decisions related to the company:</div>
+        <div className="small">Here you can take several actions related to your entity.</div>
         <div className="row">
-          <div className="col-12 col-md-8 col-lg-6 mt-4">
+          <div className="col-12 col-md-8 mt-4">
             <h4>Transfer Ownership</h4>
-            <p className="small">Move the ownership of your entity to a new owner.</p>
+            <p className="small">Transfer the ownership of your entity to a new owner.</p>
             { !transactionTransfer && (
-            <div className="input-group mb-2">
-              <input
-                type="text"
-                className="form-control right"
-                placeholder="e.g.: 0x000123123..."
-                aria-label="Text input with dropdown button"
-                onChange={handleOwnerChanges}
-              />
-              <div className="input-group-append">
-                <div className="btn btn-primary" onClick={handleClickTransferOwnership}>Transfer Ownership</div>
+            <div>
+              <div className="input-group mb-2">
+                <input
+                  type="text"
+                  className="form-control right"
+                  placeholder="e.g.: 0x000123123..."
+                  aria-label="Text input with dropdown button"
+                  onChange={handleOwnerChanges}
+                />
+                <div className="input-group-append">
+                  <div className="btn btn-primary disabled" onClick={handleClickTransferOwnership}>New Owner</div>
+                </div>
               </div>
+              <div className="btn col-12 col-sm-8 col-md-5 btn-primary mt-4" onClick={handleClickTransferOwnership} style={{float:"right"}}>Transfer Ownership</div>
             </div>
             )}
             { transactionTransfer && (
@@ -102,12 +105,12 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
                 ></TransactionMonitor>
               )}
         </div>
-        <div className="col-12 col-md-8 col-lg-6 mt-4">
+        <div className="col-12 col-md-8 mt-4">
           <h4>Close Entity</h4>
           <div className="mt-2">
             <p className="small">Revoke ownership of your entity and close it.</p>
             {!closeFormOpened && (
-              <button className="btn btn-warning px-4" onClick={handleClickClose} style={{padding: "12px 24px", borderRadius: "8px"}}>
+              <button className="btn col-12 col-sm-8 col-md-5 btn-warning" onClick={handleClickClose} style={{padding: "12px 24px", borderRadius: "8px", float:"right"}}>
                 Close Entity
               </button>
             )}
@@ -116,9 +119,9 @@ const SeriesDocuments: FC<Props> = ({ account, network, managing, dispatch }: Pr
               <p>
               <span style={{ marginRight: '0.5em' }}>
             <ExclamationCircle className="fix-icon-alignment" />
-            </span>After confirm your ownership will be revoked. This operation couldn't be undone. Are you sure want to close your entity?</p>
+            </span>Confirming you want to revoke ownership will result in your real-world legal entity ceasing to exist. This cannot be undone. Are you sure you want to proceed?</p>
               <button className="btn btn-warning mt-4 px-4 py-3" onClick={handleClickConfirmClose}>
-                Confirm Close Entity
+                Yes, I am closing my company
               </button>
             </div>
             )}

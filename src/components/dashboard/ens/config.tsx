@@ -131,63 +131,71 @@ const Config: FC<Props> = ({
   }
 
   return (
-    <div>
-      <div className="small pb-2">
-        Link your multisig wallet address{' '}
-        <AddressWidget address={managing?.contract}></AddressWidget> to an
-        otoco.eth to make it easy to use. Simply check availability and claim
-        your domain for free.
-      </div>
-      {status != 'claiming' && (
-        <div className="row">
-          <div className="input-group mb-4 col-12 col-md-6">
-            <input
-              type="text"
-              className="form-control right"
-              placeholder="Choose a subdomain..."
-              aria-label="Text input with dropdown button"
-              onChange={handleInputChange}
-            />
-            <div className="input-group-append">
-              <div className="btn btn-primary disabled">.otoco.eth</div>
+    <div className="row">
+      <div className="col-12 col-md-8">
+        <div className="small pb-2">
+          Link your multisig wallet address{' '}
+          <AddressWidget address={managing?.contract}></AddressWidget> to an
+          otoco.eth to make it easy to use. Simply check availability and claim
+          your domain for free.
+        </div>
+        {status != 'claiming' && (
+          <div className="row">
+            <div className="input-group col-12 col-md-6 my-2">
+              <input
+                type="text"
+                className="form-control right"
+                placeholder="Choose a subdomain..."
+                aria-label="Text input with dropdown button"
+                onChange={handleInputChange}
+              />
+              <div className="input-group-append">
+                <div className="btn btn-primary disabled">.otoco.eth</div>
+              </div>
             </div>
           </div>
+        )}
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-warning small">{error}</p>}
+        <div className="row">
+          <div className="col-12 col-md-6">
+            {domainOwner && domainOwner !== managing?.contract && (
+              <p className="text-alert small text-end">
+                Sorry! This domain has been used. Please Enter Another Domain Name.
+              </p>
+            )}
+            {domainOwner && domainOwner === managing?.contract && (
+              <p className="text-warning small text-end">
+                Your series already own this domain! No need to register it.
+              </p>
+            )}
+            {status == 'available' && (
+              <p className="text-success small text-end">
+                {selectedName} is available! To register, click 'Claim Name'.
+              </p>
+            )}
+          </div>
+          <div className="col-12 col-md-6"> 
+          {status == 'typing' && (
+            <button className="btn btn-primary col-12 mt-2" onClick={handleClickVerify} style={{float:"right"}}>
+              Verify Name
+            </button>
+          )}
+          {status == 'available' && (
+            <button className="btn btn-primary col-12 mt-2" onClick={handleClickClaim} style={{float:"right"}}>
+              Claim Name
+            </button>
+          )}
+          </div>
         </div>
-      )}
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-warning small">{error}</p>}
-      {domainOwner && domainOwner !== managing?.contract && (
-        <p className="text-alert">
-          Sorry! This domain has been used. Please Enter Another Domain Name.
-        </p>
-      )}
-      {domainOwner && domainOwner === managing?.contract && (
-        <p className="text-warning">
-          Your series already own this domain! No need to register it.
-        </p>
-      )}
-      {status == 'available' && (
-        <p className="text-success">
-          {selectedName} is available! To register, click 'Claim Name'.
-        </p>
-      )}
-      {status == 'typing' && (
-        <button className="btn btn-primary" onClick={handleClickVerify}>
-          Verify Name
-        </button>
-      )}
-      {status == 'available' && (
-        <button className="btn btn-primary" onClick={handleClickClaim}>
-          Claim Name
-        </button>
-      )}
-      {transaction && (
-        <TransactionMonitor
-          hash={transaction}
-          title="Register Subdomain"
-          callbackSuccess={registeringFinished}
-        ></TransactionMonitor>
-      )}
+        {transaction && (
+          <TransactionMonitor
+            hash={transaction}
+            title="Register Subdomain"
+            callbackSuccess={registeringFinished}
+          ></TransactionMonitor>
+        )}
+      </div>
     </div>
   )
 }

@@ -119,25 +119,23 @@ const SeriesOverview: FC<Props> = ({
       <div className="d-grid gap-1 mb-5">
         <h3 className="m-0">Billing</h3>
         <div className="small">
-          Here you can pay for the maintenance of your entities and see what
-          else you paid for.
+        Here you can pay for the maintenance and other add-ons for your entities and keep track of what you paid for.<br/>
+        All billing actions require authentication with your connected account.
         </div>
         {!privatekey && (
-          <div className="d-flex justify-content-center">
-            <div className="row">
+          <div className="row">
+            <div className="col-12 col-md-8">
               <WelcomeForm></WelcomeForm>
             </div>
           </div>
         )}
         {error && (
-          <div className="d-flex justify-content-center">
             <div className="row">
               <div className="col-12 text-center text-warning">{error}</div>
               <div className="col-12 text-center">
                 Try again in some minutes.
               </div>
             </div>
-          </div>
         )}
         {!error && privatekey && (
           <div>
@@ -188,9 +186,6 @@ const SeriesOverview: FC<Props> = ({
               ></PaymentWidget>
             </div>
             <h3 className="m-0">Payments made</h3>
-            <div className="small">
-              Easy place to check the payments you have made using plugins
-            </div>
             <table className="table">
               <thead>
                 <tr className="d-none d-md-table-row">

@@ -48,14 +48,17 @@ const Config: FC<Props> = ({
 
   const ListOwners = () => {
     return owners.map((owner, idx) => (
-      <div className="multisig-owner-card mt-2 me-2 px-3">
+      <div className="multisig-owner-card mt-2 px-3">
+        <div className="mt-2" style={{float:'left'}}>
         {owner.substring(0, 6) +
           '...' +
           owner.substring(owner.length - 6, owner.length)}
         {owner.toLocaleLowerCase() == account?.toLocaleLowerCase() && <span className="text-white-50"> (you)</span>}
+        </div>
         <button
           className={`btn btn-sm ${!multisig || owners.length < 2 ? 'disabled':''}`}
           onClick={handleRemoveOwner.bind(undefined, idx)}
+          style={{float:'right'}}
         >
           <XLg>&#10005;</XLg>
         </button>
@@ -207,13 +210,13 @@ const Config: FC<Props> = ({
 
   return (
     <div>
-      <div className="mb-4">
-        Create a Gnosis-Safe wallet to store your company assets.
+      <div className="small mb-2">
+        Create a digital wallet to store your company's crypto assets using Gnosis-Safe.
       </div>
-      <div className="small">Your Safe will have one or more owners. We have prefilled the first owner with your connected wallet details.</div>
+      <div className="small">Your Safe wallet can have one or more owners. Your connected wallet is its first owner, but you can add more below.</div>
       <div className="row">
-        <h5 className="mt-2">Owners:</h5>
-        <div className="mb-2 d-flex flex-wrap">
+        <div className="mt-2 small">Owners:</div>
+        <div className="col-12 col-md-8 mb-2 d-flex flex-wrap">
           <ListOwners></ListOwners>
         </div>
       </div>
@@ -230,41 +233,45 @@ const Config: FC<Props> = ({
         >
           <div>
           <div className="row">
-            <div className="mb-2 col-12">
+            <div className="mb-2 col-12 col-md-8">
               {error && <p className="text-warning small">{error}</p>}
             </div>
           </div>
           <div className="row">
-            <div className="input-group mb-3 col-12 col-md-6">
-              <input
-                type="text"
-                className="form-control right"
-                placeholder="Fill an owner address..."
-                aria-label="Text input with button"
-                value={currentOwner}
-                onChange={handleOwnerInputChange}
-              />
-              <div className="input-group-append">
-                <button className="btn btn-primary" onClick={handleAddOwner}>
-                  Insert Owner
-                </button>
+            <div className="col-12 col-md-8"> 
+              <div className="input-group mb-3">
+                <input
+                  type="text"
+                  className="form-control right"
+                  placeholder="Add an owner address..."
+                  aria-label="Text input with button"
+                  value={currentOwner}
+                  onChange={handleOwnerInputChange}
+                />
+                <div className="input-group-append">
+                  <button className="btn btn-primary" onClick={handleAddOwner}>
+                    Add Owner
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           <div className="row">
-            <div className="col-12 small">Any transaction requires the confirmation of:</div>
-            <div className="input-group mb-2 col-12 col-md-10 col-lg-8">
-              <input
-                type="text"
-                className="form-control right"
-                placeholder="Number of signatures to aprove a transaction"
-                aria-label="Text input with button"
-                onChange={handleThresholdChange}
-              />
-              <div className="input-group-append">
-                <span className="btn btn-primary disabled">
-                  out of {owners.length} owner(s)
-                </span>
+            <div className="col-12 col-md-8 small">Any transaction requires the confirmation of:</div>
+            <div className="mb-2 col-12 col-md-8">
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control right"
+                  placeholder="Number of signatures to aprove a transaction"
+                  aria-label="Text input with button"
+                  onChange={handleThresholdChange}
+                />
+                <div className="input-group-append">
+                  <span className="btn btn-primary disabled">
+                    out of {owners.length} owner(s)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -272,26 +279,30 @@ const Config: FC<Props> = ({
         </CSSTransition>
       )}
       {!transaction && (
-        <div>
-          { !multisig && 
-            <button className="btn btn-primary mt-4 me-2" onClick={handleClickAddOwners}>
-              + more owners
+        <div className="row">
+          <div className="col-12 col-md-8">
+            { !multisig && 
+              <button className="col-12 col-md-5 col-lg-4 btn btn-primary mt-4" onClick={handleClickAddOwners}>
+                + More Owners
+              </button>
+            }
+            <button className="col-12 col-md-5 col-lg-4 btn btn-primary mt-4" onClick={handleClickDeploy} style={{float:'right'}}>
+              Create Wallet
             </button>
-          }
-          <button className="btn btn-primary mt-4" onClick={handleClickDeploy}>
-            Create Wallet
-          </button>
-          <p className="mt-4">Or link an existing Gnosis-Safe multisig wallet</p>
-          <div className="input-group mb-2">
-            <input
-              type="text"
-              className="form-control right"
-              placeholder="e.g.: 0x000123123..."
-              aria-label="Text input with dropdown button"
-              onChange={handleExistingChanges}
-            />
-            <div className="input-group-append">
-              <div className="btn btn-primary" onClick={handleClickAttachExisting}>Attach Wallet</div>
+          </div>
+          <div className="col-12 col-md-8">
+            <p className="mt-4">or attach an existing Gnosis-Safe multisig wallet to your company</p>
+            <div className="input-group mb-2">
+              <input
+                type="text"
+                className="form-control right"
+                placeholder="e.g.: 0x000123123..."
+                aria-label="Text input with dropdown button"
+                onChange={handleExistingChanges}
+              />
+              <div className="input-group-append">
+                <div className="btn btn-primary" onClick={handleClickAttachExisting}>Attach Wallet</div>
+              </div>
             </div>
           </div>
         </div>
