@@ -258,10 +258,10 @@ const PaymentWidget: FC<Props> = ({
         let r = await web3.eth.getTransactionReceipt(receiptId);
         if (!r.status)
           throw "Transaction not exists or not confirmed.";
-        if (r.to != ERC20Contract.addressesUSDT[network]) {
+        if (r.to != ERC20Contract.addressesDAI[network]) {
           receipt.method = 'DAI'
           receipt.currency = 'DAI'
-        } else if (r.to != ERC20Contract.addressesDAI[network]) {
+        } else if (r.to != ERC20Contract.addressesUSDT[network]) {
           receipt.method = 'USDT'
           receipt.currency = 'USDT'
         }
