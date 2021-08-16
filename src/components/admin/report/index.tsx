@@ -18,7 +18,7 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
     if (!process.env.GATSBY_ORACLE_KEY) return
 
     const res = await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
-      method: 'wallet-report',
+      method: 'wallets-report',
       message: {},
     })
 
@@ -46,7 +46,7 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
       parseInt(endDate.split('/')[2]))
 
     const res = await Textile.sendMessage(process.env.GATSBY_ORACLE_KEY, {
-      method: 'payment-report',
+      method: 'payments-report',
       message: {
         start: startTimestamp,
         end: endTimestamp
@@ -77,14 +77,13 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
             >
               Request Wallets Report
             </button>
-            <p className="mb-2">{result}</p>
             <h4>Report Payments</h4>
             <p className="small">Request payments on a specific timeframe.</p>
             <div className="input-group mb-4">
               <input
                 type="text"
                 className="form-control right"
-                placeholder="YYYY-MM-DD"
+                placeholder="YYYY/MM/DD"
                 onChange={handleChangeStart}
               />
               <div className="input-group-append">
@@ -95,7 +94,7 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
               <input
                 type="text"
                 className="form-control right"
-                placeholder="YYYY-MM-DD"
+                placeholder="YYYY/MM/DD"
                 onChange={handleChangeEnd}
               />
               <div className="input-group-append">
@@ -104,10 +103,11 @@ const Report: FC<Props> = ({ privatekey }: Props) => {
             </div>
             <button
               className="btn btn-primary mb-2"
-              onClick={handleWalletReportRequest}
+              onClick={handlePaymentReportRequest}
             >
               Request Payments Report
             </button>
+            <p className="mb-2">{result}</p>
           </div>
         </div>
       </div>

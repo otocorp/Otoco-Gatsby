@@ -83,7 +83,7 @@ export const ListInboxMessages = ({
           <div>
             <button
               className="btn btn-primary-outline btn-sm me-2"
-              onClick={handleDownload.bind(undefined, m.body.companies)}
+              onClick={handleDownload.bind(undefined, m.body)}
             >
               Download
             </button>
