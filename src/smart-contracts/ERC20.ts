@@ -330,6 +330,10 @@ export default {
     main: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     ropsten: '0x722dd3f80bac40c951b51bdd28dd19d435762180',
   },
+  addressesUSDC: {
+    main: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    ropsten: '0x53644f14a0df80c6484b12eebbb4358dd0258aa0',
+  },
   getContractDAI: function (network = 'ropsten'): Contract {
     const web3: Web3 = window.web3
     return new web3.eth.Contract(this.abi, this.addressesDAI[network])
@@ -337,6 +341,10 @@ export default {
   getContractUSDT: function (network = 'ropsten'): Contract {
     const web3: Web3 = window.web3
     return new web3.eth.Contract(this.abi, this.addressesUSDT[network])
+  },
+  getContractUSDC: function (network = 'ropsten'): Contract {
+    const web3: Web3 = window.web3
+    return new web3.eth.Contract(this.abi, this.addressesUSDC[network])
   },
 }
 

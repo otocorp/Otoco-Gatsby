@@ -12,8 +12,8 @@ export const ADD_OUTBOX_MESSAGES = 'ADD_OUTBOX_MESSAGES'
 
 export interface PaymentReceipt {
   receipt: string
-  method: 'WYRE' | 'DAI' | 'USDT'
-  currency: 'USD' | 'DAI' | 'USDT'
+  method: 'WYRE' | 'DAI' | 'USDT' | 'USDC'
+  currency: 'USD' | 'DAI' | 'USDT' | 'USDC'
   timestamp: number
 }
 
@@ -51,8 +51,8 @@ export interface PaymentProps {
   product: string // Service paid for
   entity: string // Company ETH Address
   environment: string
-  method: 'WYRE' | 'DAI' | 'USDT'
-  currency: 'USD' | 'DAI' | 'USDT'
+  method: 'WYRE' | 'DAI' | 'USDT' | 'USDC'
+  currency: 'USD' | 'DAI' | 'USDT' | 'USDC'
   amount: number
   timestamp: number
   status: 'processing' | 'failed' | 'success'

@@ -169,6 +169,48 @@ const PaymentWidget: FC<Props> = ({
       }
     }
   }
+  const handleUSDCPayment = async () => {
+    if (!account || !network) return
+    setError('')
+    setStatus(StatusType.PROCESSING)
+    try {
+      const requestInfo = await TransactionUtils.getTransactionRequestInfo(
+        account,
+        '60000'
+      )
+      const hash: string = await new Promise((resolve, reject) => {
+        ERC20Contract.getContractUSDC(network)
+          .methods.transfer(
+            process.env.GATSBY_WYRE_WALLET,
+            Web3.utils.toWei(amount.toString(), 'mwei')
+          )
+          .send(requestInfo, (error: Error, hash: string) => {
+            if (error) reject(error.message)
+            else resolve(hash)
+          })
+      })
+      // if (!r.status) throw 'Transaction Errored'
+      const receipt: PaymentReceipt = {
+        receipt: hash,
+        method: 'USDC',
+        currency: 'USDC',
+        timestamp: Date.now(),
+      }
+      setReceipt(receipt)
+      setStatus(StatusType.SUCCESS)
+      await sendPaymentMessage(receipt)
+    } catch (err) {
+      // In case of error sending confirmation message
+      if (status != StatusType.SUCCESS) {
+        setStatus(StatusType.OPENED)
+        setError('Payment failed or cancelled.')
+      } else {
+        setError(
+          'Error sending receipt to oracle, wait some minutes and click Re-send message.'
+        )
+      }
+    }
+  }
   const handleCloseModal = async () => {
     setError('')
     setReceipt(null)
@@ -333,6 +375,13 @@ const PaymentWidget: FC<Props> = ({
                     >
                       <OtocoIcon icon="usdt" size={48} />
                       <div className="label">{amount} USDT</div>
+                    </button>
+                    <button
+                      className="btn btn-primary modal-option"
+                      onClick={handleUSDCPayment}
+                    >
+                      <OtocoIcon icon="usdc" size={48} />
+                      <div className="label">{amount} USDC</div>
                     </button>
                   </div>
                   <p className="small mt-2">
