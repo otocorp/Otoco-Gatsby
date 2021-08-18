@@ -1,6 +1,6 @@
+import Web3Integrate from '../../../services/web3-integrate'
 import GnosisSafe from '../../../smart-contracts/GnosisSafe'
 import BN from 'bn.js'
-import Web3 from 'web3'
 
 const EMPTY_DATA = '0x'
 
@@ -68,7 +68,7 @@ const getGasEstimationTxResponse = async (txConfig: {
   gasPrice?: number
   gas?: number
 }): Promise<number> => {
-  const web3: Web3 = window.web3
+  const web3 = Web3Integrate.getWeb3()
   try {
     const result = await web3.eth.call(txConfig)
 

@@ -1,5 +1,5 @@
 import { AbstractProvider } from 'web3-core'
-import Web3 from 'web3'
+import Web3Integrate from '../../../../services/web3-integrate'
 
 const EMPTY_DATA = '0x'
 const EIP712_NOT_SUPPORTED_ERROR_MSG =
@@ -61,8 +61,7 @@ const generateTypedDataFrom = async ({
 }
 
 export const getEIP712Signer = (version?: string) => async (txArgs) => {
-  const web3 = window.web3
-  const accounts = await web3.eth.getAccounts()
+  const web3 = Web3Integrate.getWeb3()
   const typedData = await generateTypedDataFrom(txArgs)
 
   let method = 'eth_signTypedData_v3'

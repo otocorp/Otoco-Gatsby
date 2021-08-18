@@ -26,9 +26,8 @@ const Admin: FC<Props> = ({ account, privatekey, dispatch }: Props) => {
 
   React.useEffect(() => {
     setTimeout(async () => {
-      if (!account) {
-        await Web3Integrate.callModal()
-        const web3: Web3 = window.web3
+      try {
+        const web3 = Web3Integrate.getWeb3()
         const accounts = await web3.eth.getAccounts()
         dispatch({
           type: SET_NETWORK,
@@ -36,6 +35,8 @@ const Admin: FC<Props> = ({ account, privatekey, dispatch }: Props) => {
         })
         dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
         return
+      } catch (err) {
+        console.log(err)
       }
     }, 10)
   }, [account])

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Web3 from 'web3'
+import Web3Integrate from '../web3-integrate'
 import { AbiItem } from 'web3-utils'
 import GnosisSafe from '../../smart-contracts/GnosisSafe'
 import { estimateSafeTxGas } from '../../services/safe/transactions/gas'
@@ -14,19 +15,19 @@ export const sendMultisigTransaction = async (
   params: string[],
   gas: string
 ): Promise<string | null> => {
-  const web3: Web3 = window.web3
+  const web3 = Web3Integrate.getWeb3()
   // Get gas price form api
   // Get nonce form contract
   // Get estimateSafeTxGas -> /safe/transaction/gas
   // Get getTransactionHash -> /safe/transactions
   // Get tryOffchainSigning -> /safe/transactions/offchainSigner
   // Get getExecutionTransaction -> /safe/transactions/send
-  let gasPrice = web3.utils.toWei((50).toString(), 'gwei')
+  let gasPrice = Web3.utils.toWei((50).toString(), 'gwei')
   try {
     const gasFees = await axios.get(
       `https://ethgasstation.info/api/ethgasAPI.json`
     )
-    gasPrice = web3.utils.toWei((gasFees.data.fast * 0.1).toString(), 'gwei')
+    gasPrice = Web3.utils.toWei((gasFees.data.fast * 0.1).toString(), 'gwei')
   } catch (err) {
     console.error('Could not fetch gas fee for transaction.')
   }

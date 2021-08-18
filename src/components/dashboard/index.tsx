@@ -76,27 +76,13 @@ const Overview: FC<Props> = ({ account, network, series, dispatch }: Props) => {
       // IF NOT CONNECTED YET
       setLoading(true)
       setError(null)
-      if (!account) {
-        try {
-          await Web3Integrate.callModal()
-          const web3: Web3 = window.web3
-          const accounts = await web3.eth.getAccounts()
-          dispatch({
-            type: SET_NETWORK,
-            payload: await web3.eth.net.getNetworkType(),
-          })
-          dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
-          return
-        } catch (err) {
-          setError('Error connecting wallet. ' + err)
-        }
-      }
-      // ALREADY CONNECTED
-      const web3: Web3 = window.web3
-      const ownSeries: any = {}
 
+      if (!account) return
+      const ownSeries: any = {}
+      // ALREADY CONNECTED
+      const web3: Web3 = Web3Integrate.getWeb3()
       if (!web3) {
-        setError('Failed to connect wallet.')
+        setError('Wallet not connected.')
         return
       }
       if (!network) {

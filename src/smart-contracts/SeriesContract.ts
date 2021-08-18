@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+import Web3Integrate from '../services/web3-integrate'
 import { Contract } from 'web3-eth-contract'
 const seriesContractABI = [
   {
@@ -82,7 +82,7 @@ const seriesContractABI = [
 export default {
   abi: seriesContractABI,
   getContract: function (address): Contract {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     return new web3.eth.Contract(this.abi, address)
   },
 }

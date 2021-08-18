@@ -56,17 +56,7 @@ const SeriesManagement: FC<Props> = ({
     setTimeout(async () => {
       // IF NOT CONNECTED YET
       setLoading(true)
-      if (!account || !network) {
-        await Web3Integrate.callModal()
-        const web3: Web3 = window.web3
-        const accounts = await web3.eth.getAccounts()
-        dispatch({
-          type: SET_NETWORK,
-          payload: await web3.eth.net.getNetworkType(),
-        })
-        dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
-        return
-      }
+      if (!account || !network) return
       if (!managing) {
         const newSeries: SeriesType = {
           jurisdiction: '',

@@ -1,5 +1,6 @@
 import React, { FC, useState } from 'react'
 import Web3, { EventData } from 'web3'
+import Web3Integrate from '../../services/web3-integrate'
 import BN from 'bn.js'
 import axios, { AxiosResponse } from 'axios'
 import { Link } from 'gatsby'
@@ -230,6 +231,7 @@ const LaunchPool: FC<Props> = ({ id, account, network }: Props) => {
     if (!stakes) return
     if (!poolInfo) return
     if (!allowedTokens) return
+    if (!account || !network) return
     const stake: StakeInterface = {
       id: stakeEvent.returnValues[0],
       token: allowedTokens.find((t) => t.address == stakeEvent.returnValues[2]),
@@ -238,7 +240,7 @@ const LaunchPool: FC<Props> = ({ id, account, network }: Props) => {
       shares: new BN(0),
       timestamp: new Date(),
     }
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     const block = await web3.eth.getBlock(stakeEvent.blockNumber)
     // Set stake timestamp
     stake.timestamp = new Date(parseInt(block.timestamp.toString()) * 1000)

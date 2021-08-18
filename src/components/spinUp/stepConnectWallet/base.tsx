@@ -35,15 +35,18 @@ const StepConnectWallet: FC<Props> = ({
   }
 
   const clickConnectHandler = async () => {
-    await Web3Integrate.callModal()
-    const web3: Web3 = window.web3
-    const accounts = await web3.eth.getAccounts()
-    dispatch({
-      type: SET_NETWORK,
-      payload: await web3.eth.net.getNetworkType(),
-    })
-    dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
-    dispatch({ type: SET_CURRENT_STEP, payload: 3 })
+    try {
+      const web3 = await Web3Integrate.callModal()
+      const accounts = await web3.eth.getAccounts()
+      dispatch({
+        type: SET_NETWORK,
+        payload: await web3.eth.net.getNetworkType(),
+      })
+      dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
+      dispatch({ type: SET_CURRENT_STEP, payload: 3 })
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   return (

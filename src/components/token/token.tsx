@@ -1,5 +1,4 @@
 import React, { FC, Dispatch, useState } from 'react'
-import Web3 from 'web3'
 import BN from 'bn.js'
 import ENS from 'ethereum-ens'
 import { navigate } from '@reach/router'
@@ -62,17 +61,7 @@ const Token: FC<Props> = ({
   React.useEffect(() => {
     setTimeout(async () => {
       // IF NOT CONNECTED YET
-      if (!account) {
-        await Web3Integrate.callModal()
-        const web3: Web3 = window.web3
-        const accounts = await web3.eth.getAccounts()
-        dispatch({
-          type: SET_NETWORK,
-          payload: await web3.eth.net.getNetworkType(),
-        })
-        dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
-        return
-      }
+      if (!account) return
       // ALREADY CONNECTED
       const decimals = await TokenContract.getContract(id)
         .methods.decimals()
@@ -135,7 +124,7 @@ const Token: FC<Props> = ({
   }
 
   const handleChangeTo = (event) => {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     const ens = new ENS(web3.currentProvider)
     ens
       .resolver(event.target.value)

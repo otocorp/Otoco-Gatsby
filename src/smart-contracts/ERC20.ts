@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+import Web3Integrate from '../services/web3-integrate'
 import { Contract } from 'web3-eth-contract'
 const contractABI = [
   {
@@ -335,15 +335,15 @@ export default {
     ropsten: '0x53644f14a0df80c6484b12eebbb4358dd0258aa0',
   },
   getContractDAI: function (network = 'ropsten'): Contract {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     return new web3.eth.Contract(this.abi, this.addressesDAI[network])
   },
   getContractUSDT: function (network = 'ropsten'): Contract {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     return new web3.eth.Contract(this.abi, this.addressesUSDT[network])
   },
   getContractUSDC: function (network = 'ropsten'): Contract {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     return new web3.eth.Contract(this.abi, this.addressesUSDC[network])
   },
 }

@@ -1,5 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import { connect } from 'react-redux'
 import { XLg } from 'react-bootstrap-icons'
 import TransactionUtils from '../../../services/transactionUtils'
@@ -39,8 +40,6 @@ const Config: FC<Props> = ({
   const [multisig, setMultisig] = useState<boolean>(false)
   const [existing, setExisting] = useState('')
   const [transaction, setTransaction] = useState<string | null>(null)
-
-  const web3: Web3 = window.web3
 
   React.useEffect(() => {
     setOwners([account])
@@ -83,7 +82,7 @@ const Config: FC<Props> = ({
   }
 
   const handleAddOwner = (event) => {
-    if (!web3.utils.isAddress(currentOwner)) {
+    if (!Web3.utils.isAddress(currentOwner)) {
       setError('Owner selected isn`t a valid address.')
       return
     }
@@ -156,6 +155,7 @@ const Config: FC<Props> = ({
       '500000'
     )
     try {
+      const web3 = Web3Integrate.getWeb3()
       const setupParametersEncoded = web3.eth.abi.encodeFunctionCall(
         GnosisSafe.abi[36], // Abi for Initialize wallet with Owners config
         [
@@ -233,11 +233,6 @@ const Config: FC<Props> = ({
         >
           <div>
           <div className="row">
-            <div className="mb-2 col-12 col-md-8">
-              {error && <p className="text-warning small">{error}</p>}
-            </div>
-          </div>
-          <div className="row">
             <div className="col-12 col-md-8"> 
               <div className="input-group mb-3">
                 <input
@@ -289,6 +284,9 @@ const Config: FC<Props> = ({
             <button className="col-12 col-md-5 col-lg-4 btn btn-primary mt-4" onClick={handleClickDeploy} style={{float:'right'}}>
               Create Wallet
             </button>
+          </div>
+          <div className="mt-4 col-12 col-md-8">
+            { error && <p className="text-warning small">{error}</p> }
           </div>
           <div className="col-12 col-md-8">
             <p className="mt-4 small">or attach an existing Gnosis-Safe multisig wallet to your company</p>

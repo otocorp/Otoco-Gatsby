@@ -1,5 +1,5 @@
 import React, { Dispatch, FC, useState } from 'react'
-import Web3, { TransactionReceipt } from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import { navigate } from '@reach/router'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
@@ -77,7 +77,7 @@ const StepActivateCompany: FC<Props> = ({
   }
 
   const handleConfirmedTransaction = async () => {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     const receipt = await web3.eth.getTransactionReceipt(transaction)
     const contract = receipt.logs[3].address
     const finalName = await SeriesContract.getContract(contract)

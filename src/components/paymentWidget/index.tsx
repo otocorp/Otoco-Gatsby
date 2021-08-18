@@ -1,5 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import Web3 from 'web3'
+import Web3Integrate from '../../services/web3-integrate'
 import { connect } from 'react-redux'
 import { CSSTransition } from 'react-transition-group'
 import { SeriesType, ManagementActionTypes } from '../../state/management/types'
@@ -295,7 +296,7 @@ const PaymentWidget: FC<Props> = ({
     try {
       // Is a Hash
       if (/^0x([A-Fa-f0-9]{64})$/.test(receiptId)) {
-        const web3:Web3 = window.web3
+        const web3 = Web3Integrate.getWeb3()
         let currency = ''
         let r = await web3.eth.getTransactionReceipt(receiptId);
         if (!r.status)
