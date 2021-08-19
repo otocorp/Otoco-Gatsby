@@ -1,5 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import Web3 from 'web3'
+import BN from 'bn.js'
 import Web3Integrate from '../../services/web3-integrate'
 import { connect } from 'react-redux'
 import { CSSTransition } from 'react-transition-group'
@@ -21,6 +22,12 @@ enum StatusType {
   OPENED = 'opened',
   PROCESSING = 'processing',
   SUCCESS = 'success',
+}
+
+interface Balances {
+  DAI: boolean
+  USDT: boolean
+  USDC: boolean
 }
 
 interface Props {
@@ -55,8 +62,14 @@ const PaymentWidget: FC<Props> = ({
   const [error, setError] = useState<string>('')
   const [receiptId, setReceiptId] = useState<string>('')
   const [receiptFormVisible, setReceiptFormVisible] = useState<boolean>(false)
-
+  const [enoughBalances, setBalances] = useState<Balances>({
+    DAI:false,
+    USDT:false,
+    USDC:false
+  })
  
+
+
   React.useEffect(() => {
     if (show) {
       setStatus(StatusType.OPENED)
@@ -64,6 +77,18 @@ const PaymentWidget: FC<Props> = ({
         setCountdown(true)
       }, 200)
       setReceiptFormVisible(false)
+      setTimeout(async () => {
+        const amountToWei: BN = new BN(Web3.utils.toWei(amount.toString()))
+        const amountToMwei: BN = new BN(Web3.utils.toWei(amount.toString(),'mwei'))
+        const DAIBalance = new BN(await ERC20Contract.getContractDAI().methods.balanceOf(account).call({ from: account }))
+        const USDTBalance = new BN(await ERC20Contract.getContractUSDT().methods.balanceOf(account).call({ from: account }))
+        const USDCBalance = new BN(await ERC20Contract.getContractUSDC().methods.balanceOf(account).call({ from: account }))
+        setBalances({
+          DAI: DAIBalance.gte(amountToWei),
+          USDT: USDTBalance.gte(amountToMwei),
+          USDC: USDCBalance.gte(amountToMwei)
+        })
+      },0)
     } else {
       setStatus(StatusType.CLOSED)
       setCountdown(false)
@@ -364,25 +389,28 @@ const PaymentWidget: FC<Props> = ({
                       <div className="label">Card ${amount}</div>
                     </button>
                     <button
-                      className="btn btn-primary modal-option"
+                      className={`btn btn-primary modal-option ${enoughBalances.DAI ? '' : 'disabled'}`}
                       onClick={handleDAIPayment}
                     >
                       <OtocoIcon icon="dai" size={48} />
                       <div className="label">{amount} DAI</div>
+                      {!enoughBalances.DAI && <div className="small">no balance</div>}
                     </button>
                     <button
-                      className="btn btn-primary modal-option"
+                      className={`btn btn-primary modal-option ${enoughBalances.USDT ? '' : 'disabled'}`}
                       onClick={handleUSDTPayment}
                     >
                       <OtocoIcon icon="usdt" size={48} />
                       <div className="label">{amount} USDT</div>
+                      {!enoughBalances.USDT && <div className="small">no balance</div>}
                     </button>
                     <button
-                      className="btn btn-primary modal-option"
+                     className={`btn btn-primary modal-option ${enoughBalances.USDC ? '' : 'disabled'}`}
                       onClick={handleUSDCPayment}
                     >
                       <OtocoIcon icon="usdc" size={48} />
                       <div className="label">{amount} USDC</div>
+                      {!enoughBalances.USDC && <div className="small">no balance</div>}
                     </button>
                   </div>
                   <p className="small mt-2">
