@@ -2,7 +2,7 @@ import { PrivateKey, PublicKey } from '@textile/hub'
 import React, { FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
-import Textile from '../../../services/textile'
+import Textile from '../../../services/textile/textile'
 
 interface Props {
   privatekey?: PrivateKey

@@ -2,8 +2,8 @@ import { PrivateKey, PublicKey } from '@textile/hub'
 import React, { FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
-import Textile from '../../../services/textile'
-import { BillingProps } from '../../../state/account/types'
+import Textile from '../../../services/textile/textile'
+import { BillingProps } from '../../../services/textile/types'
 
 interface Props {
   network?: string

@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { DecryptedMailbox } from '../../../../state/account/types'
+import { DecryptedMailbox } from '../../../../services/textile/types'
 import { BroadcastMessage } from './broadcastMessage'
 import { WalletMessage } from './walletMessage'
 import { Trash } from 'react-bootstrap-icons'

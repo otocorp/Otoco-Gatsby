@@ -6,19 +6,15 @@ import {
 } from '../../../state/management/types'
 import {
   AccountActionTypes,
-  DecryptedMailbox,
-  SET_INBOX_MESSAGES,
-  SET_OUTBOX_MESSAGES,
 } from '../../../state/account/types'
-import Textile from '../../../services/textile'
+import { DecryptedMailbox } from '../../../services/textile/types'
+import Textile from '../../../services/textile/textile'
 import PaymentWidget from '../../paymentWidget'
 import { IState } from '../../../state/types'
 import { PaymentsMade } from './paymentsMade'
 import { PaymentsDue } from './paymentsDue'
 import { PrivateKey } from '@textile/crypto'
 import WelcomeForm from '../welcomeForm'
-import manage from '../manage'
-import account from '../account'
 
 interface Props {
   account?: string

@@ -4,18 +4,17 @@ import { IState } from '../../state/types'
 
 import BotImage from '../../../static/img/small-bot2.png'
 import BotSmallImage from '../../../static/img/small-bot.png'
-import Textile from '../../services/textile'
+import Textile from '../../services/textile/textile'
 
 import {
-  SET_CONTACT_FORM,
   SeriesType,
   ManagementActionTypes,
 } from '../../state/management/types'
 import {
   SET_PRIVATEKEY,
   AccountActionTypes,
-  DecryptedMailbox,
 } from '../../state/account/types'
+import { DecryptedMailbox } from '../../services/textile/types'
 import { PrivateKey } from '@textile/hub'
 import { Link } from 'gatsby'
 

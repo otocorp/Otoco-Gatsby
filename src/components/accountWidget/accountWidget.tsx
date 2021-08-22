@@ -1,33 +1,25 @@
-import React, { useEffect, Dispatch, FC, useState } from 'react'
+import React, { Dispatch, FC, useState } from 'react'
 import { CSSTransition } from 'react-transition-group'
 import Web3Integrate from '../../services/web3-integrate'
 import { connect } from 'react-redux'
 import { IState } from '../../state/types'
 import {
-  Bell,
-  BellFill,
-  XDiamond,
-  Clipboard,
   ChevronDown,
-  PencilSquare,
   BoxArrowRight,
 } from 'react-bootstrap-icons'
 import {
   SET_ACCOUNT,
   SET_NETWORK,
   DISCONNECT,
-  SET_ALIAS,
-  SET_PRIVATEKEY,
   SET_INBOX_MESSAGES,
   ADD_INBOX_MESSAGES,
   SET_OUTBOX_MESSAGES,
-  DecryptedMailbox,
   AccountActionTypes,
 } from '../../state/account/types'
-
+import { DecryptedMailbox } from '../../services/textile/types'
 import './style.scss'
 import { Link } from 'gatsby'
-import Textile from '../../services/textile'
+import Textile from '../../services/textile/textile'
 import { PrivateKey } from '@textile/hub'
 import OtocoIcon from '../icons'
 

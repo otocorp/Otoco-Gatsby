@@ -1,7 +1,6 @@
 import React, { Dispatch, FC } from 'react'
 import { connect } from 'react-redux'
 import { ExclamationCircle, Gear } from 'react-bootstrap-icons'
-import { ShieldLock } from 'react-bootstrap-icons'
 import { IState } from '../../state/types'
 import {
   ManagementActionTypes,

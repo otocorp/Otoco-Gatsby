@@ -1,10 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
-import Web3 from 'web3'
 import { connect } from 'react-redux'
 import { ChevronLeft } from 'react-bootstrap-icons'
-import Web3Integrate from '../../../services/web3-integrate'
-
-import { SET_ACCOUNT, SET_NETWORK } from '../../../state/account/types'
 import {
   SeriesType,
   ManageSection,
@@ -28,7 +24,7 @@ import { Link } from 'gatsby'
 import { CSSTransition } from 'react-transition-group'
 import { GraphNetwork, requestSubgraph } from '../../../services/thegraph'
 import { AxiosResponse } from 'axios'
-import Textile from '../../../services/textile'
+import Textile from '../../../services/textile/textile'
 
 interface Props {
   id: string

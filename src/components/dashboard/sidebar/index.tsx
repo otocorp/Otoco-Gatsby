@@ -1,4 +1,4 @@
-import React, { useState, FC, Dispatch } from 'react'
+import React, { FC, Dispatch } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
 
@@ -10,7 +10,6 @@ import {
   ManageSection,
   ManagementActionTypes,
   SeriesType,
-  Badges,
 } from '../../../state/management/types'
 import { ChevronLeft, Inboxes, Gear, Wallet2 } from 'react-bootstrap-icons'
 import OtocoIcon from '../../icons'
@@ -25,8 +24,6 @@ interface Props {
 }
 
 const SidebarSeries: FC<Props> = ({
-  account,
-  network,
   managing,
   dispatch,
 }: Props) => {
@@ -131,7 +128,5 @@ const SidebarSeries: FC<Props> = ({
 }
 
 export default connect((state: IState) => ({
-  account: state.account.account,
-  network: state.account.network,
   managing: state.management.managing,
 }))(SidebarSeries)

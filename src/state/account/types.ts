@@ -1,4 +1,5 @@
 import { PrivateKey } from '@textile/hub'
+import { DecryptedMailbox } from '../../services/textile/types'
 
 export const DISCONNECT = 'DISCONNECT'
 export const SET_ACCOUNT = 'SET_ACCOUNT'
@@ -9,98 +10,6 @@ export const SET_INBOX_MESSAGES = 'SET_INBOX_MESSAGES'
 export const ADD_INBOX_MESSAGES = 'ADD_INBOX_MESSAGES'
 export const SET_OUTBOX_MESSAGES = 'SET_OUTBOX_MESSAGES'
 export const ADD_OUTBOX_MESSAGES = 'ADD_OUTBOX_MESSAGES'
-
-export interface PaymentReceipt {
-  receipt: string
-  method: 'WYRE' | 'DAI' | 'USDT' | 'USDC'
-  currency: 'USD' | 'DAI' | 'USDT' | 'USDC'
-  timestamp: number
-}
-
-export interface ReportProps {
-  start?: number
-  end?: number
-}
-
-export interface BillingProps {
-  _id?: string
-  product: string // Service paid for
-  entity: string // Company ETH Address
-  environment: 'main' | 'ropsten'
-  amount: number
-  body?: unknown
-}
-
-export interface BroadcastProps {
-  title?: string
-  message?: string
-  link?: string
-  icon?: string
-  filter?: BroadcastFilter
-}
-
-export interface WalletProps {
-  _id: string
-  email: string
-  keys: string[]
-  signature: number
-}
-
-export interface PaymentProps {
-  _id: string // Receipt
-  product: string // Service paid for
-  entity: string // Company ETH Address
-  environment: string
-  method: 'WYRE' | 'DAI' | 'USDT' | 'USDC'
-  currency: 'USD' | 'DAI' | 'USDT' | 'USDC'
-  amount: number
-  timestamp: number
-  status: 'processing' | 'failed' | 'success'
-  body?: unknown
-}
-
-export interface CompanyInterface {
-  id: string
-  name: string
-  jurisdiction: string
-  owner: string
-  ownerEmail?: string
-  creator: string
-  creatorEmail?: string
-  creation: Date
-}
-
-export interface BroadcastFilter {
-  jurisdiction?: string
-  address?: string
-}
-
-export interface MessageResponseReport {
-  companies?: CompanyInterface[]
-  payments?: PaymentProps[]
-}
-
-export interface MessageRequest {
-  method: string
-  message:
-    | PaymentProps
-    | WalletProps
-    | BroadcastProps
-    | ReportProps
-    | BillingProps
-}
-
-export interface DecryptedMailbox {
-  id: string
-  body: any
-  from: string
-  sent: number
-  readAt?: number
-}
-
-export interface CachedAccount {
-  alias: string
-}
 
 interface Disconnect {
   type: typeof DISCONNECT

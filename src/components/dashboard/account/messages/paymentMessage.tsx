@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 import {
   DecryptedMailbox,
   PaymentProps,
-} from '../../../../state/account/types'
+} from '../../../../services/textile/types'
 import UTCDate from '../../../utcDate/utcDate'
 
 interface Props {

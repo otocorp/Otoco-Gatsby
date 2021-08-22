@@ -1,6 +1,6 @@
-import React, { FC } from 'react'
-import { DecryptedMailbox } from '../../../state/account/types'
-import { Trash, Clipboard, Download } from 'react-bootstrap-icons'
+import React from 'react'
+import { DecryptedMailbox } from '../../../services/textile/types'
+import { Clipboard, Download } from 'react-bootstrap-icons'
 import UTCDate from '../../utcDate/utcDate'
 import { downloadReceipt } from '../../../services/receipt'
 
@@ -13,8 +13,6 @@ interface ListMessagesProps {
 const clickCopyHandler = (info: string) => {
   navigator.clipboard.writeText(info)
 }
-
-
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const PaymentsMade = ({ messages, wallet }: ListMessagesProps) => {

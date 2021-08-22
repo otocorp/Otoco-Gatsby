@@ -1,7 +1,7 @@
 import React, { Dispatch, FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../../state/types'
-import Textile from '../../../../services/textile'
+import Textile from '../../../../services/textile/textile'
 import { PrivateKey } from '@textile/hub'
 import KeyWidget from '../../../keyWidget/keyWidget'
 
@@ -12,10 +12,8 @@ import {
 import {
   AccountActionTypes,
   SET_ALIAS,
-  DecryptedMailbox,
-  CachedAccount
 } from '../../../../state/account/types'
-
+import { DecryptedMailbox, CachedAccount } from '../../../../services/textile/types'
 import '../../style.scss'
 import Account from '../index'
 

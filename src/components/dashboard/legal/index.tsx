@@ -1,15 +1,11 @@
 import React, { Dispatch, FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { PDFDocument, StandardFonts } from 'pdf-lib'
-import TransactionUtils from '../../../services/transactionUtils'
-import TransactionMonitor from '../../transactionMonitor/transactionMonitor'
 import {
-  CLEAR_MANAGE_SERIES,
   SeriesType,
   ManagementActionTypes,
 } from '../../../state/management/types'
-import SeriesContract from '../../../smart-contracts/SeriesContract'
-import { DistributeVertical, FileEarmarkText } from 'react-bootstrap-icons'
+import { FileEarmarkText } from 'react-bootstrap-icons'
 import { IState } from '../../../state/types'
 
 interface Props {

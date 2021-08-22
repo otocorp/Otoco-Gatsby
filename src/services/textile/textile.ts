@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import Web3Integrate from './web3-integrate'
+import Web3Integrate from '../web3-integrate'
 import {
   Users,
   Client,
@@ -14,7 +14,7 @@ import {
   CachedAccount,
   DecryptedMailbox,
   MessageRequest,
-} from '../state/account/types'
+} from './types'
 
 const messageDecoder = async (
   message: UserMessage,
@@ -395,6 +395,19 @@ const Textile: TextileInterface = {
     // Delete from both cause it only exist in one
     await this.user.deleteSentboxMessage(id)
     await this.user.deleteInboxMessage(id)
+  },
+
+  // Threads DB
+  listMyDatabases: async function () {
+    return await this.client?.listThreads()
+  },
+
+  listMyCollections: async function () {
+    return await this.client?.listCollections()
+  },
+
+  createCollection: async function () {
+    
   },
 
   // SHARABLE BUCKETS

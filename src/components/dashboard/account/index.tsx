@@ -2,7 +2,7 @@ import React, { Dispatch, FC, useState } from 'react'
 import { Link } from 'gatsby'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
-import Textile from '../../../services/textile'
+import Textile from '../../../services/textile/textile'
 import { PrivateKey } from '@textile/hub'
 import NotificationForm from '../welcomeForm'
 import { ChevronLeft } from 'react-bootstrap-icons'
@@ -14,11 +14,10 @@ import {
 } from '../../../state/management/types'
 import {
   AccountActionTypes,
-  DecryptedMailbox,
   SET_INBOX_MESSAGES,
   SET_OUTBOX_MESSAGES,
 } from '../../../state/account/types'
-
+import { DecryptedMailbox } from '../../../services/textile/types'
 import '../style.scss'
 import { CSSTransition } from 'react-transition-group'
 

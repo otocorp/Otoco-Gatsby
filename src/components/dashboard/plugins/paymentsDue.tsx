@@ -1,7 +1,5 @@
-import React, { FC } from 'react'
-import { DecryptedMailbox } from '../../../state/account/types'
-import { Trash } from 'react-bootstrap-icons'
-import UTCDate from '../../utcDate/utcDate'
+import React from 'react'
+import { DecryptedMailbox } from '../../../services/textile/types'
 
 interface ListMessagesProps {
   contract: string // Company/Entity contract address

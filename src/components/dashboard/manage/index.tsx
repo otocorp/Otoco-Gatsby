@@ -1,7 +1,5 @@
 import React, { Dispatch, FC, useState } from 'react'
-import { navigate } from '@reach/router'
 import { connect } from 'react-redux'
-import { PDFDocument, StandardFonts } from 'pdf-lib'
 import TransactionUtils from '../../../services/transactionUtils'
 import TransactionMonitor from '../../transactionMonitor/transactionMonitor'
 import {
@@ -10,7 +8,7 @@ import {
   ManagementActionTypes,
 } from '../../../state/management/types'
 import SeriesContract from '../../../smart-contracts/SeriesContract'
-import { DistributeVertical, ExclamationCircle, FileEarmarkText } from 'react-bootstrap-icons'
+import { ExclamationCircle } from 'react-bootstrap-icons'
 import { IState } from '../../../state/types'
 
 interface Props {

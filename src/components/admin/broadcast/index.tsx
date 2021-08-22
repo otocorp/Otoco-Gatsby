@@ -1,13 +1,12 @@
-import { PrivateKey, PublicKey } from '@textile/hub'
+import { PrivateKey } from '@textile/hub'
 import React, { FC, useState } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
-import Textile from '../../../services/textile'
+import Textile from '../../../services/textile/textile'
 import {
   BroadcastFilter,
   BroadcastProps,
-  PaymentProps,
-} from '../../../state/account/types'
+} from '../../../services/textile/types'
 
 interface Props {
   privatekey?: PrivateKey

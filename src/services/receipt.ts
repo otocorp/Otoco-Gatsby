@@ -1,7 +1,6 @@
 // DOCS => https://thegraph.com/docs/graphql-api#fulltext-search-queries
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 import receiptPdf from '../../static/pdfs/receipt.pdf'
-import { PaymentProps } from '../state/account/types'
 
 const saveByteArray = (reportName:string, byte:Uint8Array) => {
     const blob = new Blob([byte], { type: 'application/pdf' })

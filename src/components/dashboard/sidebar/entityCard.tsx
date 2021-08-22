@@ -1,5 +1,4 @@
 import React, { FC } from 'react'
-import { Clipboard } from 'react-bootstrap-icons'
 import { Badges } from '../../../state/management/types'
 import OtocoIcon from '../../icons'
 

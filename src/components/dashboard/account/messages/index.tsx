@@ -1,7 +1,7 @@
 import React, { Dispatch, FC } from 'react'
 import { connect } from 'react-redux'
 import { IState } from '../../../../state/types'
-import Textile from '../../../../services/textile'
+import Textile from '../../../../services/textile/textile'
 import { PrivateKey } from '@textile/hub'
 import { ListInboxMessages } from './listInboxMessages'
 import { ListOutboxMessages } from './listOutboxMessages'
@@ -9,10 +9,10 @@ import { ListOutboxMessages } from './listOutboxMessages'
 import { ManagementActionTypes } from '../../../../state/management/types'
 import {
   AccountActionTypes,
-  DecryptedMailbox,
   SET_INBOX_MESSAGES,
   SET_OUTBOX_MESSAGES,
 } from '../../../../state/account/types'
+import { DecryptedMailbox } from '../../../../services/textile/types'
 import Account from '../index'
 
 interface Props {

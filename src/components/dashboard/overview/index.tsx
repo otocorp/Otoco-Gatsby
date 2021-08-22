@@ -1,6 +1,6 @@
-import React, { Dispatch, FC, useState } from 'react'
+import React, { Dispatch, FC } from 'react'
 import { connect } from 'react-redux'
-import { ChevronLeft, ExclamationCircle } from 'react-bootstrap-icons'
+import { ExclamationCircle } from 'react-bootstrap-icons'
 import Address from '../../addressWidget/addressWidget'
 import UTCDate from '../../utcDate/utcDate'
 import {
@@ -10,23 +10,16 @@ import {
   ManageSection,
 } from '../../../state/management/types'
 import { IState } from '../../../state/types'
-import { IJurisdictionOption } from '../../../state/spinUp/types'
 
 interface Props {
-  account?: string | null
-  network?: string | null
   managing?: SeriesType
-  jurisdictionOptions: IJurisdictionOption[]
   dispatch: Dispatch<ManagementActionTypes>
 }
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const SeriesOverview: FC<Props> = ({
-  account,
-  network,
   managing,
-  jurisdictionOptions,
   dispatch,
 }: Props) => {
 
@@ -102,8 +95,5 @@ const SeriesOverview: FC<Props> = ({
 }
 
 export default connect((state: IState) => ({
-  account: state.account.account,
-  network: state.account.network,
-  managing: state.management.managing,
-  jurisdictionOptions: state.spinUp.jurisdictionOptions,
+  managing: state.management.managing
 }))(SeriesOverview)
