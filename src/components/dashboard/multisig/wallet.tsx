@@ -1,6 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import axios, { AxiosError, AxiosResponse } from 'axios'
-import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import BN from 'bn.js'
 import accounting from 'accounting'
 import { connect } from 'react-redux'
@@ -82,8 +82,9 @@ const Wallet: FC<Props> = ({
   }
 
   const fetchTokenBalances = async (multisigAddress: string) => {
-    const web3: Web3 = window.web3
     if (!multisigAddress) return
+    if (!account || !network) return
+    const web3 = Web3Integrate.getWeb3()
     let path
     if (network === 'ropsten') path = 'https://api-ropsten.etherscan.io/api'
     else if (network === 'main') path = 'https://api.etherscan.io/api'

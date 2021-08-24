@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+import Web3Integrate from '../services/web3-integrate'
 import { Contract } from 'web3-eth-contract'
 const MasterRegistryABI = [
   {
@@ -246,7 +246,7 @@ export default {
   },
   abi: MasterRegistryABI,
   getContract: function (network = 'ropsten'): Contract {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     return new web3.eth.Contract(this.abi, this.addresses[network]) // web3.eth.contract(this.abi).at(this.addresses[network]);
   },
 }

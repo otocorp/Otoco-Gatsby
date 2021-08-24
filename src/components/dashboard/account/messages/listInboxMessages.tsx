@@ -99,3 +99,4 @@ export const ListInboxMessages = ({
     </tr>
   ))
 }
+

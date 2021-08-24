@@ -1,3 +1,4 @@
+import Web3Integrate from '../../../../services/web3-integrate'
 import { AbstractProvider } from 'web3-core/types'
 
 const EMPTY_DATA = '0x'
@@ -12,7 +13,7 @@ export const ethSigner = async ({
   safeTxHash,
   sender,
 }: EthSignerArgs): Promise<string> => {
-  const web3 = window.web3
+  const web3 = Web3Integrate.getWeb3()
 
   return new Promise(function (resolve, reject) {
     const provider = web3.currentProvider as AbstractProvider

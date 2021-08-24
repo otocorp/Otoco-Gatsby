@@ -1,5 +1,6 @@
 import React, { useState, FC } from 'react'
 import Web3 from 'web3'
+import Web3Integrate from '../../services/web3-integrate'
 import ENS from 'ethereum-ens'
 import { Clipboard } from 'react-bootstrap-icons'
 import { connect } from 'react-redux'
@@ -22,7 +23,7 @@ const AddressWidget: FC<Props> = ({ address, network }: Props) => {
   }
 
   React.useEffect(() => {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     if (!web3) return
     const ens = new ENS(web3.currentProvider)
     if (network === 'ropsten')

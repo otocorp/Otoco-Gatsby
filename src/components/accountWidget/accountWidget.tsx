@@ -1,5 +1,4 @@
 import React, { useEffect, Dispatch, FC, useState } from 'react'
-import Web3 from 'web3'
 import { CSSTransition } from 'react-transition-group'
 import Web3Integrate from '../../services/web3-integrate'
 import { connect } from 'react-redux'
@@ -53,14 +52,17 @@ const AccountWidget: FC<Props> = ({
   const [collapsed, setCollapse] = useState(true)
 
   const handleConnect = async () => {
-    const web3: Web3 = await Web3Integrate.callModal()
-    //const web3: Web3 = window.web3
-    const accounts = await web3.eth.getAccounts()
-    dispatch({
-      type: SET_NETWORK,
-      payload: await web3.eth.net.getNetworkType(),
-    })
-    dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
+    try {
+      const web3 = await Web3Integrate.callModal()
+      const accounts = await web3.eth.getAccounts()
+      dispatch({
+        type: SET_NETWORK,
+        payload: await web3.eth.net.getNetworkType(),
+      })
+      dispatch({ type: SET_ACCOUNT, payload: accounts[0] })
+    } catch (err) {
+      console.log('Error connecting wallet')
+    }
   }
 
   const handleScroll = (event) => {
@@ -73,8 +75,15 @@ const AccountWidget: FC<Props> = ({
   }
 
   React.useEffect(() => {
-    window.addEventListener('scroll', handleScroll, true)
-    setCollapse(true)
+    setTimeout(async () => {
+      window.addEventListener('scroll', handleScroll, true)
+      setCollapse(true)
+      try {
+        await Web3Integrate.getWeb3()
+      } catch (err) {
+        handleConnect()
+      }
+    }, 0)
   }, [account, show])
 
   React.useEffect(() => {

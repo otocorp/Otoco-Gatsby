@@ -1,4 +1,5 @@
 import Web3 from 'web3'
+import Web3Integrate from './web3-integrate'
 import {
   Users,
   Client,
@@ -107,7 +108,7 @@ const Textile: TextileInterface = {
   generateIdentity: async function (
     account: string
   ): Promise<PrivateKey | null> {
-    const web3: Web3 = window.web3
+    const web3 = Web3Integrate.getWeb3()
     const message = this.generateMessageForEntropy(account)
     const signedText = await web3.eth.personal.sign(message, account)
     const signatureHash = web3.utils.keccak256(signedText).replace('0x', '')
@@ -134,7 +135,7 @@ const Textile: TextileInterface = {
     publickey: string
   ): Promise<string | null> {
     try {
-      const web3: Web3 = window.web3
+      const web3 = Web3Integrate.getWeb3()
       const message = this.generateMessageForPublicKeyValidation(publickey)
       const signature = await web3.eth.personal.sign(message, address)
       return signature

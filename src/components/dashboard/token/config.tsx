@@ -1,5 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import BN from 'bn.js'
 import { connect } from 'react-redux'
 import CurrencyInput from 'react-currency-input-field';
@@ -32,7 +33,6 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
   const [existing, setExisting] = useState('')
   const [transaction, setTransaction] = useState('')
 
-  const web3: Web3 = window.web3
   const getBNDecimals = (decimals: number) => {
     return new BN(10).pow(new BN(decimals))
   }
@@ -134,6 +134,7 @@ const Config: FC<Props> = ({ account, network, managing, dispatch }: Props) => {
       setError('Not connected or not account related.')
       return
     }
+    const web3 = Web3Integrate.getWeb3()
     // Get deployed Token Contract
     const contract = await MasterRegistry.getContract(network)
       .methods.getRecord(managing.contract, 1)

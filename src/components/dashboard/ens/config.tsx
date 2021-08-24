@@ -1,6 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import ENS from 'ethereum-ens'
-import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import OtocoRegistrar from '../../../smart-contracts/OtocoRegistrar'
 import { connect } from 'react-redux'
 import TransactionUtils from '../../../services/transactionUtils'
@@ -44,7 +44,7 @@ const Config: FC<Props> = ({
     'start' | 'typing' | 'used' | 'available' | 'claiming' | 'success'
   >('start')
 
-  const web3: Web3 = window.web3
+  const web3 = Web3Integrate.getWeb3()
   const ens = new ENS(web3.currentProvider)
 
   //   const handleDomainChange = (e, data) => {

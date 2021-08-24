@@ -1,5 +1,5 @@
 import React, { Dispatch, FC, useState } from 'react'
-import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import ENS from 'ethereum-ens'
 import namehash from 'eth-ens-namehash'
 import OtocoRegistrar from '../../../smart-contracts/OtocoRegistrar'
@@ -106,7 +106,8 @@ const Registered: FC<Props> = ({
 
   const updateDomains = async () => {
     setTransaction(null)
-    const web3: Web3 = window.web3
+    if (!network || !account) return
+    const web3 = Web3Integrate.getWeb3()
     const ens = new ENS(web3.currentProvider)
     OtocoRegistrar.getContract(network)
       .methods.ownedDomains(managing.contract)

@@ -4,7 +4,7 @@ import Web3Modal from 'web3modal'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 
 interface ModalType {
-  getWeb3: () => Promise<Web3 | undefined>
+  getWeb3: () => Web3
   callModal: () => Promise<Web3>
   disconnect: () => void
   web3?: Web3
@@ -17,8 +17,8 @@ const Modal: ModalType = {
   web3Modal: undefined,
   provider: undefined,
 
-  getWeb3: async function (): Promise<Web3> {
-    if (!this.web3) await this.callModal()
+  getWeb3: function (): Web3 {
+    if (!this.web3) throw 'WEB3 not yet connected'
     return this.web3
   },
   callModal: async function (): Promise<Web3> {
@@ -27,13 +27,16 @@ const Modal: ModalType = {
         walletconnect: {
           package: WalletConnectProvider, // required
           options: {
-            infuraId: process.env.GATSBY_INFURA_ID, // required
+            // infuraId: process.env.GATSBY_INFURA_ID, // required
+            rpc: {
+              1: "https://cloudflare-eth.com/",
+              3: "https://ropsten.infura.io/v3/" + process.env.GATSBY_INFURA_ID,
+            }
           },
         },
       }
 
       this.web3Modal = new Web3Modal({
-        // network: "kovan", // optional
         cacheProvider: false, // optional
         providerOptions, // required
         theme: {
@@ -48,17 +51,11 @@ const Modal: ModalType = {
 
     this.provider = await this.web3Modal.connect()
     this.web3 = new Web3(this.provider)
-    window.web3 = this.web3
-
-    // if (this.provider.isAuthereum) this.provider.authereum.showWidget();
-    // else if (this.provider.isUniLogin) web3.currentProvider.callModal = this.provider.boundOpenDashboard;
-    // else web3.currentProvider.callModal = undefined;
     return this.web3
   },
   disconnect: function (): void {
     if (this.web3Modal) this.web3Modal.clearCachedProvider()
     this.provider = null
-    window.web3 = undefined
   },
 }
 

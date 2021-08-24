@@ -1,5 +1,5 @@
 import React, { Dispatch, FC, useState } from 'react'
-import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import BN from 'bn.js'
 import { connect } from 'react-redux'
 import Config from './config'
@@ -32,7 +32,6 @@ const SeriesToken: FC<Props> = ({
 }: Props) => {
   const [loading, setLoading] = useState(true)
 
-  const web3: Web3 = window.web3
   const getBNDecimals = (decimals: number) => {
     return new BN(10).pow(new BN(decimals))
   }
@@ -40,6 +39,7 @@ const SeriesToken: FC<Props> = ({
   React.useEffect(() => {
     setTimeout(async () => {
       if (!account || !network || !managing) return
+      const web3 = Web3Integrate.getWeb3()
       const contract = await MasterRegistry.getContract(network)
         .methods.getRecord(managing.contract, 1)
         .call({ from: account })

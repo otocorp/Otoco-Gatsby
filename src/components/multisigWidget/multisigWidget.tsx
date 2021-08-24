@@ -1,6 +1,7 @@
 import React, { FC, useState } from 'react'
 import axios from 'axios'
 import Web3 from 'web3'
+import Web3Integrate from '../../services/web3-integrate'
 import { AbiItem } from 'web3-utils'
 import BN from 'bn.js'
 import { connect } from 'react-redux'
@@ -18,6 +19,7 @@ import {
   getExecutionTransaction,
 } from '../../services/safe/transactions/send'
 import { tryOffchainSigning } from '../../services/safe/transactions/offchainSigner'
+
 
 interface Props {
   account?: string
@@ -63,20 +65,21 @@ const MultisigWidget: FC<Props> = ({
   // setName('name.eth')
 
   const sendMultisigTransaction = async () => {
-    const web3: Web3 = window.web3
+    if (!account || !network) return
     if (!multisigDeployed) return
+    const web3 = Web3Integrate.getWeb3()
     // Get gas price form api
     // Get nonce form contract
     // Get estimateSafeTxGas -> /safe/transaction/gas
     // Get getTransactionHash -> /safe/transactions
     // Get tryOffchainSigning -> /safe/transactions/offchainSigner
     // Get getExecutionTransaction -> /safe/transactions/send
-    let gasPrice = web3.utils.toWei((50).toString(), 'gwei')
+    let gasPrice = Web3.utils.toWei((50).toString(), 'gwei')
     try {
       const gasFees = await axios.get(
         `https://ethgasstation.info/api/ethgasAPI.json`
       )
-      gasPrice = web3.utils.toWei((gasFees.data.fast * 0.1).toString(), 'gwei')
+      gasPrice = Web3.utils.toWei((gasFees.data.fast * 0.1).toString(), 'gwei')
     } catch (err) {
       console.error('Could not fetch gas fee for transaction.')
     }

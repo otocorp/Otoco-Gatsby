@@ -38,10 +38,9 @@ const EnoughBalanceForm: FC<Props> = ({
   dispatch,
   setTransaction,
 }: Props) => {
-  const web3: Web3 = window.web3
 
   const clickApproveHandler = async () => {
-    if (!account) return
+    if (!account || !network) return
     const requestInfo = await TransactionUtils.getTransactionRequestInfo(
       account,
       '200000'
@@ -50,7 +49,7 @@ const EnoughBalanceForm: FC<Props> = ({
       ERC20Contract.getContractDAI(network)
         .methods.approve(
           mainContractAddress,
-          web3.utils.toWei(feeBN.toString(), 'ether')
+          Web3.utils.toWei(feeBN.toString(), 'ether')
         )
         .send(requestInfo, (error: any, hash: string) => {
           setTransaction(hash)

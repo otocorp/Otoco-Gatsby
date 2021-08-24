@@ -1,5 +1,5 @@
 import React, { FC, Dispatch, useState } from 'react'
-import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import BN from 'bn.js'
 import { connect } from 'react-redux'
 import { IState } from '../../../state/types'
@@ -32,14 +32,13 @@ const Master: FC<Props> = ({ account, network, dispatch }: Props) => {
   const [transaction, setTransaction] = useState('')
 
   const getBNDecimals = (decimals) => {
-    const BN = web3.utils.BN
     return new BN(10).pow(new BN(decimals))
   }
 
   React.useEffect(() => {
     setTimeout(async () => {
       if (!account) return
-      const web3: Web3 = window.web3
+      const web3 = Web3Integrate.getWeb3()
       const accounts = await web3.eth.getAccounts()
       if (
         (await MainContract.getContract(network, 'us_de')

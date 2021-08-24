@@ -1,6 +1,6 @@
 import React, { Dispatch, FC, useState } from 'react'
 import { connect } from 'react-redux'
-import Web3 from 'web3'
+import Web3Integrate from '../../../services/web3-integrate'
 import ENS from 'ethereum-ens'
 import Config from './config'
 import Registered from './registered'
@@ -37,7 +37,7 @@ const SeriesENS: FC<Props> = ({
   React.useEffect(() => {
     setTimeout(async () => {
       if (!network || !managing) return
-      const web3: Web3 = window.web3
+      const web3 = Web3Integrate.getWeb3()
       const ens = new ENS(web3.currentProvider)
       const seriesQuantity = await OtocoRegistrar.getContract(network)
         .methods.ownedDomains(managing.contract)

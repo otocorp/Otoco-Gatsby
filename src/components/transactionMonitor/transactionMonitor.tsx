@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react'
-import Web3 from 'web3'
+import Web3Integrate from '../../services/web3-integrate'
 import { TransactionReceipt } from 'web3-core'
 import { connect } from 'react-redux'
 import { IState } from '../../state/types'
@@ -31,7 +31,6 @@ const TransactionMonitor: FC<Props> = ({
   callbackSuccess,
   callbackError,
 }: Props) => {
-  const web3: Web3 = window.web3
   const [exists, setExists] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState('Fetching transaction')
@@ -47,6 +46,7 @@ const TransactionMonitor: FC<Props> = ({
         if (callbackSuccess) callbackSuccess(receipt)
       }
       try {
+        const web3 = Web3Integrate.getWeb3()
         const transaction = await new Promise((resolve, reject) => {
           web3.eth.getTransaction(hash, (err, tx) => {
             try {
