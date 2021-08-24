@@ -12,7 +12,7 @@ module.exports = {
     {
       resolve: `gatsby-plugin-create-client-paths`,
       options: {
-        prefixes: [`/token/*`, `/dashpanel/entity/*`, `/launchpool/*`, `/proof/*`],
+        prefixes: [`/token/*`, `/dashpanel/entity/*`, `/launchpool/*`],
       },
     },
     {

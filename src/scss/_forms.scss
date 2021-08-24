@@ -38,7 +38,8 @@
 }
 
 .form-control,
-.input-group input {
+.input-group input,
+textarea {
   background: transparent !important;
   color: $white !important;
   border-radius: $border-radius-sm;
